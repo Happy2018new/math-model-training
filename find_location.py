@@ -1,9 +1,11 @@
 import cv2
+import csv
 import numpy as np
 
 
 IMAGE_PATH = r"C:\Users\29532\AppData\Local\Temp\codex-clipboard-d53bd2d9-3d93-4230-afd4-49ab75070304.png"
 OUTPUT_PATH = "detected_centers.png"
+RAW_CENTERS_CSV_PATH = "raw_centers.csv"
 
 
 def find_circle_centers(mask, min_area=20, max_area=500, split_factor=1.55):
@@ -60,6 +62,42 @@ def find_circle_centers(mask, min_area=20, max_area=500, split_factor=1.55):
     return sorted(centers, key=lambda p: (p[1], p[0]))
 
 
+def save_raw_centers_csv(green_centers, blue_centers, image_shape, output_path):
+    height, width = image_shape[:2]
+    fieldnames = [
+        "color",
+        "x_pixel",
+        "y_pixel",
+        "image_width",
+        "image_height",
+    ]
+    rows = [
+        {
+            "color": "green",
+            "x_pixel": x,
+            "y_pixel": y,
+            "image_width": width,
+            "image_height": height,
+        }
+        for x, y in green_centers
+    ] + [
+        {
+            "color": "blue",
+            "x_pixel": x,
+            "y_pixel": y,
+            "image_width": width,
+            "image_height": height,
+        }
+        for x, y in blue_centers
+    ]
+    rows.sort(key=lambda p: (p["y_pixel"], p["x_pixel"], p["color"]))
+
+    with open(output_path, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def main():
     img = cv2.imread(IMAGE_PATH)
     if img is None:
@@ -94,6 +132,8 @@ def main():
 
     print(f"\nGreen count: {len(green_centers)}")
     print(f"Blue count: {len(blue_centers)}")
+    print(f"Total count: {len(green_centers) + len(blue_centers)}")
+    save_raw_centers_csv(green_centers, blue_centers, img.shape, RAW_CENTERS_CSV_PATH)
 
     vis = img.copy()
 
@@ -127,6 +167,7 @@ def main():
 
     cv2.imwrite(OUTPUT_PATH, vis)
     print(f"\nSaved annotated image to: {OUTPUT_PATH}")
+    print(f"Saved raw centers to: {RAW_CENTERS_CSV_PATH}")
 
 
 if __name__ == "__main__":
