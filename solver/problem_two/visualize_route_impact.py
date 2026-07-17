@@ -62,7 +62,7 @@ def create_visualization(
         ]
     )
 
-    figure, axes = plt.subplots(1, 2, figsize=(15, 7.4), dpi=180, facecolor="#f7fafc")
+    figure, axes = plt.subplots(1, 2, figsize=(15, 7.4), dpi=180, facecolor="#ffffff")
     figure.subplots_adjust(left=0.07, right=0.94, top=0.84, bottom=0.15, wspace=0.28)
     scheme_colors = ["#dbeafe", "#bfdbfe", "#93c5fd", "#67e8f9", "#a7f3d0", "#fde68a", "#fbcfe8"]
     scheme_map = ListedColormap(scheme_colors[: len(signatures)])

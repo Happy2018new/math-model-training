@@ -126,7 +126,7 @@ def create_visualization(
     """创建基准多无人机路线地图与统计信息。"""
     plt.rcParams["font.family"] = "Microsoft YaHei"
     plt.rcParams["axes.unicode_minus"] = False
-    figure = plt.figure(figsize=(16, 10), dpi=180, facecolor="#f8fafc")
+    figure = plt.figure(figsize=(16, 10), dpi=180, facecolor="#ffffff")
     grid = figure.add_gridspec(
         2,
         2,
@@ -139,7 +139,7 @@ def create_visualization(
     map_axis = figure.add_subplot(grid[1, 0])
     info_axis = figure.add_subplot(grid[1, 1])
 
-    header_axis.set_facecolor("#f8fafc")
+    header_axis.set_facecolor("#ffffff")
     header_axis.axis("off")
     header_axis.text(
         0.025,
@@ -241,7 +241,7 @@ def create_visualization(
     for spine in map_axis.spines.values():
         spine.set_color("#e2e8f0")
 
-    info_axis.set_facecolor("#f8fafc")
+    info_axis.set_facecolor("#ffffff")
     info_axis.axis("off")
     info_axis.text(
         0.03, 0.94, "基准方案", fontsize=21, fontweight="bold", color="#0f2942"

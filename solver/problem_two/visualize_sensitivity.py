@@ -42,9 +42,9 @@ def create_visualization(
     plt.rcParams["font.family"] = "Microsoft YaHei"
     plt.rcParams["axes.unicode_minus"] = False
 
-    figure = plt.figure(figsize=(15, 10), dpi=180, facecolor="#f7fafc")
+    figure = plt.figure(figsize=(15, 10), dpi=180, facecolor="#ffffff")
     axis = figure.add_subplot(111, projection="3d")
-    axis.set_facecolor("#f7fafc")
+    axis.set_facecolor("#ffffff")
 
     colormap = LinearSegmentedColormap.from_list(
         "clear_blue", ["#dff7f2", "#7dd3c7", "#38a6c6", "#2563a8"]
@@ -96,7 +96,7 @@ def create_visualization(
     axis.set_box_aspect((1.1, 1.1, 0.7))
 
     for pane in (axis.xaxis.pane, axis.yaxis.pane, axis.zaxis.pane):
-        pane.set_facecolor((0.97, 0.98, 0.99, 1.0))
+        pane.set_facecolor((1.0, 1.0, 1.0, 1.0))
         pane.set_edgecolor((0.87, 0.91, 0.94, 1.0))
     axis.grid(True, color="#d9e2ec", linewidth=0.7, alpha=0.7)
     axis.tick_params(colors="#526777", labelsize=10)
