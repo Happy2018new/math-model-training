@@ -10,6 +10,7 @@ from resolve import INPUT_POINT_PATH, PROJECT_ROOT, Point, load_points, solve_ts
 
 
 OUTPUT_PATH = PROJECT_ROOT / "output" / "problems" / "one" / "visual.png"
+MAP_PATH = PROJECT_ROOT / "others" / "input_picture.png"
 CANVAS_WIDTH = 1600
 CANVAS_HEIGHT = 1000
 HORIZONTAL_PADDING = 110
@@ -29,24 +30,25 @@ DELIVERY = (75, 165, 66)
 
 
 def project_points(points: list[Point]) -> list[tuple[int, int]]:
-    """Scale mathematical coordinates into the drawable canvas area."""
-    xs = [float(point["x_math"]) for point in points]
-    ys = [float(point["y_math"]) for point in points]
-    min_x, max_x = min(xs), max(xs)
-    min_y, max_y = min(ys), max(ys)
-    scale_x = (CANVAS_WIDTH - 2 * HORIZONTAL_PADDING) / max(max_x - min_x, 1.0)
-    scale_y = (CANVAS_HEIGHT - TOP_PADDING - BOTTOM_PADDING) / max(max_y - min_y, 1.0)
+    """Project mathematical coordinates with the same transform as the map."""
+    map_image = cv2.imdecode(np.fromfile(MAP_PATH, dtype=np.uint8), cv2.IMREAD_COLOR)
+    if map_image is None:
+        raise FileNotFoundError(f"Cannot read map image: {MAP_PATH}")
+    map_height, map_width = map_image.shape[:2]
+    scale_x = (CANVAS_WIDTH - 2 * HORIZONTAL_PADDING) / map_width
+    scale_y = (CANVAS_HEIGHT - TOP_PADDING - BOTTOM_PADDING) / map_height
     scale = min(scale_x, scale_y)
-    offset_x = (CANVAS_WIDTH - scale * (max_x - min_x)) / 2 - scale * min_x
-    offset_y = (
-        TOP_PADDING
-        + (CANVAS_HEIGHT - TOP_PADDING - BOTTOM_PADDING - scale * (max_y - min_y)) / 2
-        + scale * max_y
-    )
+    offset_x = (CANVAS_WIDTH - scale * map_width) / 2
+    offset_y = TOP_PADDING + (
+        CANVAS_HEIGHT - TOP_PADDING - BOTTOM_PADDING - scale * map_height
+    ) / 2
 
     return [
-        (round(scale * x + offset_x), round(offset_y - scale * y))
-        for x, y in zip(xs, ys)
+        (
+            round(offset_x + scale * float(point["x_math"])),
+            round(offset_y + scale * ((map_height - 1) - float(point["y_math"]))),
+        )
+        for point in points
     ]
 
 
@@ -56,6 +58,34 @@ def draw_grid(canvas: np.ndarray) -> None:
         cv2.line(canvas, (x, 0), (x, CANVAS_HEIGHT), GRID, 1)
     for y in range(0, CANVAS_HEIGHT, 120):
         cv2.line(canvas, (0, y), (CANVAS_WIDTH, y), GRID, 1)
+
+
+def draw_map_background(canvas: np.ndarray) -> None:
+    """Draw a softened map background aligned with the mathematical coordinates."""
+    encoded = np.fromfile(MAP_PATH, dtype=np.uint8)
+    map_image = cv2.imdecode(encoded, cv2.IMREAD_COLOR)
+    if map_image is None:
+        raise FileNotFoundError(f"Cannot read map image: {MAP_PATH}")
+
+    map_height, map_width = map_image.shape[:2]
+    scale = min(
+        (CANVAS_WIDTH - 2 * HORIZONTAL_PADDING) / map_width,
+        (CANVAS_HEIGHT - TOP_PADDING - BOTTOM_PADDING) / map_height,
+    )
+    output_width = round(map_width * scale)
+    output_height = round(map_height * scale)
+    map_image = cv2.resize(map_image, (output_width, output_height), interpolation=cv2.INTER_CUBIC)
+    gray = cv2.cvtColor(map_image, cv2.COLOR_BGR2GRAY)
+    softened = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+    softened = cv2.addWeighted(map_image, 0.35, softened, 0.65, 0)
+    white = np.full_like(softened, 255)
+    softened = cv2.addWeighted(softened, 0.58, white, 0.42, 0)
+    offset_x = round((CANVAS_WIDTH - output_width) / 2)
+    offset_y = round(
+        TOP_PADDING
+        + (CANVAS_HEIGHT - TOP_PADDING - BOTTOM_PADDING - output_height) / 2
+    )
+    canvas[offset_y : offset_y + output_height, offset_x : offset_x + output_width] = softened
 
 
 def draw_route(
@@ -137,6 +167,7 @@ def main() -> None:
     screen_points = project_points([depot] + deliveries)
 
     canvas = np.full((CANVAS_HEIGHT, CANVAS_WIDTH, 3), BACKGROUND, dtype=np.uint8)
+    draw_map_background(canvas)
     draw_grid(canvas)
     draw_route(canvas, route, screen_points)
     draw_points(canvas, screen_points)
