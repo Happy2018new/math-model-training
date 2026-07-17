@@ -50,14 +50,14 @@ def find_circle_centers(mask, min_area=20, max_area=500, split_factor=1.55):
             0.05,
         )
         cv2.setRNGSeed(0)
-        _compactness, _cluster_labels, cluster_centers = cv2.kmeans(
+        _, _, cluster_centers = cv2.kmeans(
             points,
             expected_count,
-            None,
+            None,  # type: ignore
             criteria,
             10,
             cv2.KMEANS_PP_CENTERS,
-        )
+        )  # type: ignore
 
         for cx, cy in cluster_centers:
             centers.append((round(float(cx), 2), round(float(cy), 2)))

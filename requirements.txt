@@ -1,2 +1,7 @@
 numpy
 opencv-python
+Pillow
+pandas
+openmeteo-requests
+requests-cache
+retry-requests
