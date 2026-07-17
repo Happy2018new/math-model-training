@@ -1,11 +1,16 @@
 import cv2
 import csv
+import json
+from pathlib import Path
+
 import numpy as np
 
-
-IMAGE_PATH = r"C:\Users\29532\AppData\Local\Temp\codex-clipboard-d53bd2d9-3d93-4230-afd4-49ab75070304.png"
-OUTPUT_PATH = "detected_centers.png"
-RAW_CENTERS_CSV_PATH = "raw_centers.csv"
+IMAGE_PATH = r"others/input_picture.png"
+OUTPUT_DIR = Path("output/processed")
+OUTPUT_PATH = OUTPUT_DIR / "detected_centers.png"
+POINTS_CSV_PATH = OUTPUT_DIR / "points.csv"
+POINTS_JSON_PATH = OUTPUT_DIR / "points.json"
+DISTANCE_MATRIX_PATH = OUTPUT_DIR / "distance_matrix.csv"
 
 
 def find_circle_centers(mask, min_area=20, max_area=500, split_factor=1.55):
@@ -62,43 +67,79 @@ def find_circle_centers(mask, min_area=20, max_area=500, split_factor=1.55):
     return sorted(centers, key=lambda p: (p[1], p[0]))
 
 
-def save_raw_centers_csv(green_centers, blue_centers, image_shape, output_path):
-    height, width = image_shape[:2]
+def preprocess_points(green_centers, blue_centers, image_shape):
+    image_height, image_width = image_shape[:2]
+    raw_points = [
+        {"color": color, "x_pixel": x, "y_pixel": y}
+        for color, centers in (("green", green_centers), ("blue", blue_centers))
+        for x, y in centers
+    ]
+    raw_points.sort(key=lambda p: (p["y_pixel"], p["x_pixel"], p["color"]))
+
+    color_counts = {}
+    points = []
+    for idx, point in enumerate(raw_points, start=1):
+        color = point["color"]
+        color_counts[color] = color_counts.get(color, 0) + 1
+        x_pixel = float(point["x_pixel"])
+        y_pixel = float(point["y_pixel"])
+        points.append(
+            {
+                "id": idx,
+                "color": color,
+                "color_id": color_counts[color],
+                "x_pixel": round(x_pixel, 2),
+                "y_pixel": round(y_pixel, 2),
+                "x_norm": round(x_pixel / (image_width - 1), 6),
+                "y_norm": round(y_pixel / (image_height - 1), 6),
+                "x_math": round(x_pixel, 2),
+                "y_math": round((image_height - 1) - y_pixel, 2),
+            }
+        )
+    return points
+
+
+def save_points_csv(points, output_path):
     fieldnames = [
+        "id",
         "color",
+        "color_id",
         "x_pixel",
         "y_pixel",
-        "image_width",
-        "image_height",
+        "x_norm",
+        "y_norm",
+        "x_math",
+        "y_math",
     ]
-    rows = [
-        {
-            "color": "green",
-            "x_pixel": x,
-            "y_pixel": y,
-            "image_width": width,
-            "image_height": height,
-        }
-        for x, y in green_centers
-    ] + [
-        {
-            "color": "blue",
-            "x_pixel": x,
-            "y_pixel": y,
-            "image_width": width,
-            "image_height": height,
-        }
-        for x, y in blue_centers
-    ]
-    rows.sort(key=lambda p: (p["y_pixel"], p["x_pixel"], p["color"]))
-
     with open(output_path, "w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(points)
+
+
+def save_points_json(points, output_path):
+    with open(output_path, "w", encoding="utf-8") as file:
+        json.dump(points, file, ensure_ascii=False, indent=2)
+
+
+def save_distance_matrix(points, output_path):
+    coords = np.array([(point["x_pixel"], point["y_pixel"]) for point in points])
+    diff = coords[:, None, :] - coords[None, :, :]
+    matrix = np.sqrt(np.sum(diff * diff, axis=2)) if len(coords) else np.empty((0, 0))
+
+    with open(output_path, "w", encoding="utf-8") as file:
+        file.write(",".join(["id"] + [str(point["id"]) for point in points]) + "\n")
+        for point, distances in zip(points, matrix):
+            file.write(
+                ",".join(
+                    [str(point["id"])] + [f"{distance:.4f}" for distance in distances]
+                )
+                + "\n"
+            )
 
 
 def main():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     img = cv2.imread(IMAGE_PATH)
     if img is None:
         raise FileNotFoundError(f"Cannot read image: {IMAGE_PATH}")
@@ -133,7 +174,10 @@ def main():
     print(f"\nGreen count: {len(green_centers)}")
     print(f"Blue count: {len(blue_centers)}")
     print(f"Total count: {len(green_centers) + len(blue_centers)}")
-    save_raw_centers_csv(green_centers, blue_centers, img.shape, RAW_CENTERS_CSV_PATH)
+    points = preprocess_points(green_centers, blue_centers, img.shape)
+    save_points_csv(points, POINTS_CSV_PATH)
+    save_points_json(points, POINTS_JSON_PATH)
+    save_distance_matrix(points, DISTANCE_MATRIX_PATH)
 
     vis = img.copy()
 
@@ -167,7 +211,9 @@ def main():
 
     cv2.imwrite(OUTPUT_PATH, vis)
     print(f"\nSaved annotated image to: {OUTPUT_PATH}")
-    print(f"Saved raw centers to: {RAW_CENTERS_CSV_PATH}")
+    print(f"Saved preprocessed points to: {POINTS_CSV_PATH}")
+    print(f"Saved preprocessed points to: {POINTS_JSON_PATH}")
+    print(f"Saved distance matrix to: {DISTANCE_MATRIX_PATH}")
 
 
 if __name__ == "__main__":
