@@ -1,6 +1,7 @@
 numpy
 opencv-python
 Pillow
+matplotlib
 pandas
 openmeteo-requests
 requests-cache
