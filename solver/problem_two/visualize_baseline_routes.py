@@ -11,9 +11,17 @@ from PIL import Image, ImageEnhance
 from matplotlib.patches import FancyArrowPatch
 
 try:
-    from .resolve import MAP_SCALE_KM_PER_PIXEL
+    from .resolve import (
+        MAP_SCALE_KM_PER_PIXEL,
+        WEATHER_CODE_OVERRIDE,
+        weather_coefficient,
+    )
 except ImportError:
-    from resolve import MAP_SCALE_KM_PER_PIXEL
+    from resolve import (
+        MAP_SCALE_KM_PER_PIXEL,
+        WEATHER_CODE_OVERRIDE,
+        weather_coefficient,
+    )
 
 
 Point = dict[str, Any]
@@ -25,7 +33,9 @@ OUTPUT_PATH = PROJECT_ROOT / "output" / "problems" / "two" / "baseline_routes.pn
 ROUTE_COLORS = ("#2563eb", "#0d9488", "#f59e0b", "#e85d75", "#7c3aed")
 
 
-def load_baseline_result(results_path: Path) -> tuple[float, list[list[int]], list[float]]:
+def load_baseline_result(
+    results_path: Path,
+) -> tuple[float, list[list[int]], list[float]]:
     """读取 alpha=1、beta=1 场景的总航程、路线和单机航程。"""
     text = results_path.read_text(encoding="utf-8")
     blocks = re.split(r"\n\n(?=alpha=)", text)[1:]
@@ -34,7 +44,9 @@ def load_baseline_result(results_path: Path) -> tuple[float, list[list[int]], li
         beta = float(re.search(r"beta=([0-9.]+)", block).group(1))
         if alpha != 1.0 or beta != 1.0:
             continue
-        total = float(re.search(r"total_corrected_distance_km=([0-9.]+)", block).group(1))
+        total = float(
+            re.search(r"total_corrected_distance_km=([0-9.]+)", block).group(1)
+        )
         routes = [
             list(map(int, route.split(" -> ")))
             for route in re.findall(r"drone_\d+_route=(.+)", block)
@@ -199,6 +211,27 @@ def create_visualization(
         fontweight="bold",
         zorder=8,
     )
+    map_axis.text(
+        0.025,
+        0.035,
+        (
+            "假设雷暴天气模拟\n"
+            f"WMO 天气代码 {WEATHER_CODE_OVERRIDE}  (μ = {weather_coefficient(WEATHER_CODE_OVERRIDE):.2f})\n"
+            f"比例尺 L = {MAP_SCALE_KM_PER_PIXEL:.3f} km/像素"
+        ),
+        transform=map_axis.transAxes,
+        fontsize=9.5,
+        color="#334155",
+        linespacing=1.55,
+        va="bottom",
+        bbox={
+            "boxstyle": "round,pad=0.65,rounding_size=0.25",
+            "facecolor": "white",
+            "edgecolor": "#dbe4ee",
+            "alpha": 0.90,
+        },
+        zorder=10,
+    )
     map_axis.set_aspect("equal", adjustable="box")
     map_axis.set_xlim(0, map_image.width - 1)
     map_axis.set_ylim(0, map_image.height - 1)
@@ -210,24 +243,43 @@ def create_visualization(
 
     info_axis.set_facecolor("#f8fafc")
     info_axis.axis("off")
-    info_axis.text(0.03, 0.94, "基准方案", fontsize=21, fontweight="bold", color="#0f2942")
+    info_axis.text(
+        0.03, 0.94, "基准方案", fontsize=21, fontweight="bold", color="#0f2942"
+    )
     info_axis.text(0.03, 0.885, "α = 1.0   β = 1.0", fontsize=11, color="#64748b")
+    info_axis.text(0.03, 0.80, "总修正航程", fontsize=11, color="#64748b")
     info_axis.text(
         0.03,
-        0.845,
-        f"比例尺 L = {MAP_SCALE_KM_PER_PIXEL:.3f} km/像素",
-        fontsize=10,
-        color="#64748b",
+        0.735,
+        f"{total_cost:.2f} km",
+        fontsize=25,
+        fontweight="bold",
+        color="#0f2942",
     )
-    info_axis.text(0.03, 0.80, "总修正航程", fontsize=11, color="#64748b")
-    info_axis.text(0.03, 0.735, f"{total_cost:.2f} km", fontsize=25, fontweight="bold", color="#0f2942")
     info_axis.plot([0.03, 0.95], [0.68, 0.68], color="#dbe4ee", linewidth=1)
 
     y = 0.62
-    for index, (route, cost, color) in enumerate(zip(routes, costs, ROUTE_COLORS), start=1):
-        info_axis.scatter([0.06], [y], s=82, color=color, edgecolor="white", linewidth=1.2)
-        info_axis.text(0.13, y + 0.018, f"无人机 {index}", fontsize=11, fontweight="bold", color="#243b53")
-        info_axis.text(0.13, y - 0.018, f"7 个配送点   {cost:.2f} km", fontsize=9.5, color="#78909f")
+    for index, (route, cost, color) in enumerate(
+        zip(routes, costs, ROUTE_COLORS), start=1
+    ):
+        info_axis.scatter(
+            [0.06], [y], s=82, color=color, edgecolor="white", linewidth=1.2
+        )
+        info_axis.text(
+            0.13,
+            y + 0.018,
+            f"无人机 {index}",
+            fontsize=11,
+            fontweight="bold",
+            color="#243b53",
+        )
+        info_axis.text(
+            0.13,
+            y - 0.018,
+            f"7 个配送点   {cost:.2f} km",
+            fontsize=9.5,
+            color="#78909f",
+        )
         y -= 0.105
 
     info_axis.text(
