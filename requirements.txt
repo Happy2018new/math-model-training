@@ -2,6 +2,7 @@ numpy
 opencv-python
 Pillow
 matplotlib
+adjustText
 pandas
 openmeteo-requests
 requests-cache
