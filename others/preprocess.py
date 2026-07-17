@@ -1,5 +1,4 @@
 import cv2
-import csv
 import json
 from pathlib import Path
 
@@ -8,7 +7,6 @@ import numpy as np
 IMAGE_PATH = r"others/input_picture.png"
 OUTPUT_DIR = Path("output/processed")
 OUTPUT_PATH = OUTPUT_DIR / "detected_centers.png"
-POINTS_CSV_PATH = OUTPUT_DIR / "points.csv"
 POINTS_JSON_PATH = OUTPUT_DIR / "points.json"
 DISTANCE_MATRIX_PATH = OUTPUT_DIR / "distance_matrix.csv"
 
@@ -88,33 +86,11 @@ def preprocess_points(green_centers, blue_centers, image_shape):
                 "id": idx,
                 "color": color,
                 "color_id": color_counts[color],
-                "x_pixel": round(x_pixel, 2),
-                "y_pixel": round(y_pixel, 2),
-                "x_norm": round(x_pixel / (image_width - 1), 6),
-                "y_norm": round(y_pixel / (image_height - 1), 6),
                 "x_math": round(x_pixel, 2),
                 "y_math": round((image_height - 1) - y_pixel, 2),
             }
         )
     return points
-
-
-def save_points_csv(points, output_path):
-    fieldnames = [
-        "id",
-        "color",
-        "color_id",
-        "x_pixel",
-        "y_pixel",
-        "x_norm",
-        "y_norm",
-        "x_math",
-        "y_math",
-    ]
-    with open(output_path, "w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(points)
 
 
 def save_points_json(points, output_path):
@@ -123,7 +99,7 @@ def save_points_json(points, output_path):
 
 
 def save_distance_matrix(points, output_path):
-    coords = np.array([(point["x_pixel"], point["y_pixel"]) for point in points])
+    coords = np.array([(point["x_math"], point["y_math"]) for point in points])
     diff = coords[:, None, :] - coords[None, :, :]
     matrix = np.sqrt(np.sum(diff * diff, axis=2)) if len(coords) else np.empty((0, 0))
 
@@ -175,7 +151,6 @@ def main():
     print(f"Blue count: {len(blue_centers)}")
     print(f"Total count: {len(green_centers) + len(blue_centers)}")
     points = preprocess_points(green_centers, blue_centers, img.shape)
-    save_points_csv(points, POINTS_CSV_PATH)
     save_points_json(points, POINTS_JSON_PATH)
     save_distance_matrix(points, DISTANCE_MATRIX_PATH)
 
@@ -211,7 +186,6 @@ def main():
 
     cv2.imwrite(OUTPUT_PATH, vis)
     print(f"\nSaved annotated image to: {OUTPUT_PATH}")
-    print(f"Saved preprocessed points to: {POINTS_CSV_PATH}")
     print(f"Saved preprocessed points to: {POINTS_JSON_PATH}")
     print(f"Saved distance matrix to: {DISTANCE_MATRIX_PATH}")
 
