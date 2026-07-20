@@ -11,10 +11,9 @@ from matplotlib.ticker import PercentFormatter
 
 from .preprocess import PreprocessAudit, run_audit, write_outputs
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = (
-    PROJECT_ROOT / "output" / "problem" / "one" / "preprocess" / "figures"
+    PROJECT_ROOT / "output" / "problems" / "one" / "preprocess" / "figures"
 )
 
 TEXT_FONT = "SimSun"

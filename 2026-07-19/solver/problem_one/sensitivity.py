@@ -13,7 +13,7 @@ from .topsis import TopsisResult, calculate_topsis
 from ..utils.read import std_received
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "output" / "problem" / "one" / "sensitivity.txt"
+DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "output" / "problems" / "one" / "sensitivity.txt"
 TOP_N = 30
 
 

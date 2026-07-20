@@ -20,10 +20,15 @@ from .sensitivity import (
 )
 from ..utils.read import std_received
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "output" / "problem" / "one" / "figures"
-SHORT_INDICATOR_NAMES = ("总供货量(Q)", "供货频率(F)", "供货稳定性(V)", "订单匹配度(M)", "等效贡献量(P)")
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "output" / "problems" / "one" / "figures"
+SHORT_INDICATOR_NAMES = (
+    "总供货量(Q)",
+    "供货频率(F)",
+    "供货稳定性(V)",
+    "订单匹配度(M)",
+    "等效贡献量(P)",
+)
 INDICATOR_CODES = ("Q", "F", "V", "M", "P")
 COLOR_BLUE = "#2563EB"
 COLOR_CYAN = "#06B6D4"
@@ -41,7 +46,8 @@ NUMBER_FONT = "Latin Modern Math"
 def _configure_font() -> None:
     available_fonts = {font.name for font in font_manager.fontManager.ttflist}
     missing_fonts = {
-        font_name for font_name in (TEXT_FONT, NUMBER_FONT)
+        font_name
+        for font_name in (TEXT_FONT, NUMBER_FONT)
         if font_name not in available_fonts
     }
     if missing_fonts:
@@ -90,9 +96,7 @@ def _set_tick_fonts(
 
 
 def _scenario_label(scenario: ScenarioResult) -> str:
-    removed_names = [
-        INDICATOR_CODES[index] for index in scenario.removed_indices
-    ]
+    removed_names = [INDICATOR_CODES[index] for index in scenario.removed_indices]
     return "删除$\\mathrm{" + "+".join(removed_names) + "}$"
 
 
@@ -132,9 +136,20 @@ def plot_metric_comparison(
         linewidth=2.5,
         zorder=1,
     )
-    axis.scatter(retention, y, s=70, color=COLOR_BLUE, label="前$\\mathrm{30}$名保留率", zorder=3)
-    axis.scatter(jaccard, y, s=70, color=COLOR_GREEN, label="$\\mathrm{Jaccard}$系数", zorder=3)
-    axis.scatter(spearman, y, s=70, color=COLOR_ORANGE, label="$\\mathrm{Spearman}$系数", zorder=3)
+    axis.scatter(
+        retention, y, s=70, color=COLOR_BLUE, label="前$\\mathrm{30}$名保留率", zorder=3
+    )
+    axis.scatter(
+        jaccard, y, s=70, color=COLOR_GREEN, label="$\\mathrm{Jaccard}$系数", zorder=3
+    )
+    axis.scatter(
+        spearman,
+        y,
+        s=70,
+        color=COLOR_ORANGE,
+        label="$\\mathrm{Spearman}$系数",
+        zorder=3,
+    )
     axis.axvline(0.9, color=COLOR_RED, linestyle=(0, (4, 4)), linewidth=1.4)
     axis.text(0.902, -0.7, "$\\mathrm{90\\%}$参考线", color=COLOR_RED, fontsize=9)
     worst_index = int(np.argmin(spearman))
@@ -179,8 +194,12 @@ def plot_stability_scatter(
     output_dir: Path,
 ) -> Path:
     figure, axis = plt.subplots(figsize=(8.5, 6.5))
-    one_removed = [scenario for scenario in scenarios if len(scenario.removed_indices) == 1]
-    two_removed = [scenario for scenario in scenarios if len(scenario.removed_indices) == 2]
+    one_removed = [
+        scenario for scenario in scenarios if len(scenario.removed_indices) == 1
+    ]
+    two_removed = [
+        scenario for scenario in scenarios if len(scenario.removed_indices) == 2
+    ]
 
     for group, label, color, marker in (
         (one_removed, "删除$\\mathrm{1}$个指标", COLOR_BLUE, "o"),
@@ -256,32 +275,28 @@ def plot_selection_frequency(
     )
     ordered_matrix = selection_matrix[selected_order]
     ordered_counts = selection_counts[selected_order]
-    ordered_provider_ids = [
-        std_received[index].provider_id for index in selected_order
-    ]
+    ordered_provider_ids = [std_received[index].provider_id for index in selected_order]
     row_count = len(ordered_provider_ids)
     never_selected_count = len(STD_MATRIX) - row_count
 
     scenario_labels = [
-        "删除" + "+".join(
-            INDICATOR_CODES[index] for index in scenario.removed_indices
-        )
+        "删除" + "+".join(INDICATOR_CODES[index] for index in scenario.removed_indices)
         for scenario in scenarios
     ]
     csv_path = output_dir / "sensitivity_selection_frequency.csv"
-    csv_lines = [
-        ",".join(["供应商", *scenario_labels, "入选次数", "入选比例"])
-    ]
+    csv_lines = [",".join(["供应商", *scenario_labels, "入选次数", "入选比例"])]
     for row_index in all_order:
         provider_id = std_received[row_index].provider_id
         count = int(selection_counts[row_index])
         csv_lines.append(
-            ",".join([
-                f"S{provider_id:03d}",
-                *(str(value) for value in selection_matrix[row_index]),
-                str(count),
-                f"{count / len(scenarios):.6f}",
-            ])
+            ",".join(
+                [
+                    f"S{provider_id:03d}",
+                    *(str(value) for value in selection_matrix[row_index]),
+                    str(count),
+                    f"{count / len(scenarios):.6f}",
+                ]
+            )
         )
     csv_path.write_text("\n".join(csv_lines) + "\n", encoding="utf-8-sig")
 
@@ -308,7 +323,10 @@ def plot_selection_frequency(
     tick_positions = np.arange(0, row_count, tick_step)
     axis.set_yticks(
         tick_positions,
-        [_provider_label(ordered_provider_ids[position]) for position in tick_positions],
+        [
+            _provider_label(ordered_provider_ids[position])
+            for position in tick_positions
+        ],
     )
     axis.set_xlabel("指标删减方案")
     axis.set_ylabel("供应商（按入选次数降序）")
@@ -468,9 +486,9 @@ def plot_dashboard(
         for row_index in scenario.topsis.ranking[:top_n]:
             selection_counts[row_index] += 1
     selected_order = np.argsort(-selection_counts)
-    selected_order = [
-        index for index in selected_order if selection_counts[index] > 0
-    ][:10]
+    selected_order = [index for index in selected_order if selection_counts[index] > 0][
+        :10
+    ]
 
     weight_values = np.full((len(scenarios), len(INDICATOR_NAMES)), np.nan)
     for row, scenario in enumerate(scenarios):
@@ -566,8 +584,12 @@ def plot_dashboard(
 
     axis = figure.add_subplot(grid[0, 1])
     _dashboard_panel(axis, "集合稳定性 vs. 整体排序", "右上区域表示两种稳定性同时较高")
-    one_removed = [scenario for scenario in scenarios if len(scenario.removed_indices) == 1]
-    two_removed = [scenario for scenario in scenarios if len(scenario.removed_indices) == 2]
+    one_removed = [
+        scenario for scenario in scenarios if len(scenario.removed_indices) == 1
+    ]
+    two_removed = [
+        scenario for scenario in scenarios if len(scenario.removed_indices) == 2
+    ]
     for group, color, marker, label in (
         (one_removed, COLOR_BLUE, "o", "删1个指标"),
         (two_removed, COLOR_ORANGE, "s", "删2个指标"),
@@ -642,12 +664,23 @@ def plot_dashboard(
     )
     axis.set_xticks(np.arange(len(SHORT_INDICATOR_NAMES)), INDICATOR_CODES, fontsize=8)
     axis.set_yticks(np.arange(len(labels)), labels, fontsize=7)
-    axis.set_xlabel("指标代码：Q 总供货量 / F 供货频率 / V 稳定性 / M 匹配度 / P 等效贡献", fontsize=8)
+    axis.set_xlabel(
+        "指标代码：Q 总供货量 / F 供货频率 / V 稳定性 / M 匹配度 / P 等效贡献",
+        fontsize=8,
+    )
     for row in range(weight_values.shape[0]):
         for column in range(weight_values.shape[1]):
             value = weight_values[row, column]
             if np.isnan(value):
-                axis.text(column, row, "×", ha="center", va="center", color="#94A3B8", fontsize=9)
+                axis.text(
+                    column,
+                    row,
+                    "×",
+                    ha="center",
+                    va="center",
+                    color="#94A3B8",
+                    fontsize=9,
+                )
             else:
                 axis.text(
                     column,

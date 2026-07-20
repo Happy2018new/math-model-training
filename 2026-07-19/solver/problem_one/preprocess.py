@@ -12,7 +12,7 @@ from statistics import fmean
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ORDER_CSV_PATH = PROJECT_ROOT / "input" / "received.csv"
 SUPPLY_CSV_PATH = PROJECT_ROOT / "input" / "ask.csv"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "output" / "problem" / "one" / "preprocess"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "output" / "problems" / "one" / "preprocess"
 WEEK_COLUMNS = tuple(f"W{week:03d}" for week in range(1, 241))
 REQUIRED_COLUMNS = ("Provider", "Type", *WEEK_COLUMNS)
 VALID_MATERIALS = {"A", "B", "C"}
