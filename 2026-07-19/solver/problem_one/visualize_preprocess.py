@@ -26,7 +26,7 @@ COLOR_RED = "#EF4444"
 COLOR_INK = "#172033"
 COLOR_MUTED = "#64748B"
 COLOR_GRID = "#DCE5EF"
-COLOR_CANVAS = "#F7FAFC"
+COLOR_CANVAS = "#FFFFFF"
 
 
 def _configure_style() -> None:
