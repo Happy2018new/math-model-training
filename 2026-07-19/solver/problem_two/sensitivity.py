@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import fmean
@@ -12,6 +13,7 @@ from .step3 import resolve as resolve_step3
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "output" / "problems" / "two" / "sensitivity.txt"
+DEFAULT_CSV_PATH = PROJECT_ROOT / "output" / "problems" / "two" / "sensitivity.csv"
 DEFAULT_SUPPLY_PERCENTILES = (0.90, 0.95, 0.975, 1.00)
 DEFAULT_LOSS_PERCENTILES = (0.50, 0.75, 0.90)
 
@@ -299,9 +301,10 @@ def build_report(
 
 def run_sensitivity(
     output_path: Path = DEFAULT_OUTPUT_PATH,
+    csv_path: Path = DEFAULT_CSV_PATH,
     **kwargs: object,
 ) -> tuple[Path, list[SensitivityScenario]]:
-    """执行敏感性分析并写入文本报告。"""
+    """执行敏感性分析，并写入文本报告和结构化 CSV。"""
     scenarios = analyze_sensitivity(**kwargs)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
@@ -312,4 +315,50 @@ def run_sensitivity(
         ),
         encoding="utf-8-sig",
     )
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            [
+                "supply_percentile",
+                "loss_percentile",
+                "feasible",
+                "meets_gap",
+                "provider_count",
+                "provider_count_a",
+                "provider_count_b",
+                "provider_count_c",
+                "baseline_cost",
+                "optimized_cost",
+                "cost_saving_rate",
+                "baseline_transport_loss",
+                "optimized_transport_loss",
+                "transport_loss_reduction_rate",
+                "primary_mip_gap",
+                "secondary_mip_gap",
+                "error",
+            ]
+        )
+        for scenario in scenarios:
+            writer.writerow(
+                [
+                    scenario.supply_percentile,
+                    scenario.loss_percentile,
+                    scenario.feasible,
+                    scenario.meets_gap,
+                    scenario.provider_count,
+                    scenario.material_provider_counts.get("A"),
+                    scenario.material_provider_counts.get("B"),
+                    scenario.material_provider_counts.get("C"),
+                    scenario.baseline_cost,
+                    scenario.optimized_cost,
+                    scenario.cost_saving_rate,
+                    scenario.baseline_transport_loss,
+                    scenario.optimized_transport_loss,
+                    scenario.transport_loss_reduction_rate,
+                    scenario.primary_mip_gap,
+                    scenario.secondary_mip_gap,
+                    scenario.error,
+                ]
+            )
     return output_path, scenarios
