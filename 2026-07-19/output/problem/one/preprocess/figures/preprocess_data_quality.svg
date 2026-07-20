@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="854.64pt" height="366.088594pt" viewBox="0 0 854.64 366.088594" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-20T15:33:52.403989</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 366.088594 
+L 854.64 366.088594 
+L 854.64 0 
+L 0 0 
+z
+" style="fill: #f7fafc"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 7.2 341.705 
+L 459.207287 341.705 
+L 459.207287 86.5575 
+L 7.2 86.5575 
+z
+" style="fill: #f7fafc"/>
+   </g>
+   <g id="matplotlib.axis_1"/>
+   <g id="matplotlib.axis_2"/>
+   <g id="PathCollection_1">
+    <defs>
+     <path id="m13e7b9eac7" d="M 0 4.743416 
+C 1.257969 4.743416 2.464584 4.24362 3.354102 3.354102 
+C 4.24362 2.464584 4.743416 1.257969 4.743416 0 
+C 4.743416 -1.257969 4.24362 -2.464584 3.354102 -3.354102 
+C 2.464584 -4.24362 1.257969 -4.743416 0 -4.743416 
+C -1.257969 -4.743416 -2.464584 -4.24362 -3.354102 -3.354102 
+C -4.24362 -2.464584 -4.743416 -1.257969 -4.743416 0 
+C -4.743416 1.257969 -4.24362 2.464584 -3.354102 3.354102 
+C -2.464584 4.24362 -1.257969 4.743416 0 4.743416 
+z
+" style="stroke: #ffffff; stroke-width: 1.2"/>
+    </defs>
+    <g clip-path="url(#p7a90e41c28)">
+     <use xlink:href="#m13e7b9eac7" x="28.724157" y="119.632176" style="fill: #10b981; stroke: #ffffff; stroke-width: 1.2"/>
+     <use xlink:href="#m13e7b9eac7" x="28.724157" y="166.881713" style="fill: #10b981; stroke: #ffffff; stroke-width: 1.2"/>
+     <use xlink:href="#m13e7b9eac7" x="28.724157" y="214.13125" style="fill: #10b981; stroke: #ffffff; stroke-width: 1.2"/>
+     <use xlink:href="#m13e7b9eac7" x="28.724157" y="261.380787" style="fill: #10b981; stroke: #ffffff; stroke-width: 1.2"/>
+     <use xlink:href="#m13e7b9eac7" x="28.724157" y="308.630324" style="fill: #10b981; stroke: #ffffff; stroke-width: 1.2"/>
+    </g>
+   </g>
+   <g id="text_1">
+    <text style="font-size: 11px; font-family: 'SimSun'; text-anchor: start; fill: #172033" x="50.248313" y="123.306004" transform="rotate(-0 50.248313 123.306004)">缺失单元格</text>
+   </g>
+   <g id="text_2">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #10b981" x="437.683131" y="122.882176" transform="rotate(-0 437.683131 122.882176)">0</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 11px; font-family: 'SimSun'; text-anchor: start; fill: #172033" x="50.248313" y="170.555541" transform="rotate(-0 50.248313 170.555541)">重复供应商</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #10b981" x="437.683131" y="170.131713" transform="rotate(-0 437.683131 170.131713)">0</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 11px; font-family: 'SimSun'; text-anchor: start; fill: #172033" x="50.248313" y="217.783594" transform="rotate(-0 50.248313 217.783594)">非数值记录</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #10b981" x="437.683131" y="217.38125" transform="rotate(-0 437.683131 217.38125)">0</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 11px; font-family: 'SimSun'; text-anchor: start; fill: #172033" x="50.248313" y="265.033131" transform="rotate(-0 50.248313 265.033131)">负值记录</text>
+   </g>
+   <g id="text_8">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #10b981" x="437.683131" y="264.630787" transform="rotate(-0 437.683131 264.630787)">0</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 11px; font-family: 'SimSun'; text-anchor: start; fill: #172033" x="50.248313" y="312.282668" transform="rotate(-0 50.248313 312.282668)">跨表类别不一致</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #10b981" x="437.683131" y="311.880324" transform="rotate(-0 437.683131 311.880324)">0</text>
+   </g>
+   <g id="text_11">
+    <!-- $\mathrm{318}$ 家供应商 · $\mathrm{240}$ 周记录 · 全部检查通过 -->
+    <g style="fill: #64748b" transform="translate(7.2 81.45455)">
+     <text>
+      <tspan x="0" y="-0.75" style="font-size: 10px; font-family: 'Latin Modern Math'; fill: #64748b">3</tspan>
+      <tspan x="4.999985" y="-0.75" style="font-size: 10px; font-family: 'Latin Modern Math'; fill: #64748b">1</tspan>
+      <tspan x="9.999969" y="-0.75" style="font-size: 10px; font-family: 'Latin Modern Math'; fill: #64748b">8</tspan>
+      <tspan x="79.999954" y="-0.75" style="font-size: 10px; font-family: 'Latin Modern Math'; fill: #64748b">2</tspan>
+      <tspan x="84.999939" y="-0.75" style="font-size: 10px; font-family: 'Latin Modern Math'; fill: #64748b">4</tspan>
+      <tspan x="89.999924" y="-0.75" style="font-size: 10px; font-family: 'Latin Modern Math'; fill: #64748b">0</tspan>
+      <tspan x="14.999954" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b"> </tspan>
+      <tspan x="19.999954" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">家</tspan>
+      <tspan x="29.999954" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">供</tspan>
+      <tspan x="39.999954" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">应</tspan>
+      <tspan x="49.999954" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">商</tspan>
+      <tspan x="59.999954" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b"> </tspan>
+      <tspan x="64.999954" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">·</tspan>
+      <tspan x="74.999954" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b"> </tspan>
+      <tspan x="94.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b"> </tspan>
+      <tspan x="99.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">周</tspan>
+      <tspan x="109.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">记</tspan>
+      <tspan x="119.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">录</tspan>
+      <tspan x="129.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b"> </tspan>
+      <tspan x="134.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">·</tspan>
+      <tspan x="144.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b"> </tspan>
+      <tspan x="149.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">全</tspan>
+      <tspan x="159.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">部</tspan>
+      <tspan x="169.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">检</tspan>
+      <tspan x="179.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">查</tspan>
+      <tspan x="189.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">通</tspan>
+      <tspan x="199.999908" y="-0.75" style="font-size: 10px; font-family: 'SimSun'; fill: #64748b">过</tspan>
+     </text>
+    </g>
+   </g>
+   <g id="text_12">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'SimSun'; text-anchor: start; fill: #172033" x="7.2" y="68.5575" transform="rotate(-0 7.2 68.5575)">数据完整性检查</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_3">
+    <path d="M 512.619787 341.705 
+L 847.44 341.705 
+L 847.44 86.5575 
+L 512.619787 86.5575 
+z
+" style="fill: #f7fafc"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 527.838888 341.705 
+L 639.574057 341.705 
+L 639.574057 150.340196 
+L 527.838888 150.340196 
+z
+" clip-path="url(#p28a0727a70)" style="fill: #2563eb"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 720.485731 341.705 
+L 832.220899 341.705 
+L 832.220899 118.5178 
+L 720.485731 118.5178 
+z
+" clip-path="url(#p28a0727a70)" style="fill: #f97316"/>
+   </g>
+   <g id="matplotlib.axis_3">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m4d178b8f8e" d="M 0 0 
+L 0 3.5 
+" style="stroke: #64748b; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m4d178b8f8e" x="583.706472" y="341.705" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_13">
+      <text style="font-size: 11px; font-family: 'SimSun'; text-anchor: middle; fill: #64748b" x="583.706472" y="357.470625" transform="rotate(-0 583.706472 357.470625)">企业订货量</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m4d178b8f8e" x="776.353315" y="341.705" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_14">
+      <text style="font-size: 11px; font-family: 'SimSun'; text-anchor: middle; fill: #64748b" x="776.353315" y="357.470625" transform="rotate(-0 776.353315 357.470625)">供应商供货量</text>
+     </g>
+    </g>
+   </g>
+   <g id="matplotlib.axis_4">
+    <g id="ytick_1">
+     <g id="line2d_3">
+      <path d="M 512.619787 341.705 
+L 847.44 341.705 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_4">
+      <defs>
+       <path id="m64cf83cb39" d="M 0 0 
+L -3.5 0 
+" style="stroke: #64748b; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="341.705" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_15">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="345.522344" transform="rotate(-0 505.619787 345.522344)">0%</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_5">
+      <path d="M 512.619787 309.811562 
+L 847.44 309.811562 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="309.811562" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_16">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="313.628906" transform="rotate(-0 505.619787 313.628906)">10%</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_7">
+      <path d="M 512.619787 277.918125 
+L 847.44 277.918125 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="277.918125" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_17">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="281.735469" transform="rotate(-0 505.619787 281.735469)">20%</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_9">
+      <path d="M 512.619787 246.024687 
+L 847.44 246.024687 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="246.024687" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_18">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="249.842031" transform="rotate(-0 505.619787 249.842031)">30%</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_11">
+      <path d="M 512.619787 214.13125 
+L 847.44 214.13125 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="214.13125" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_19">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="217.948594" transform="rotate(-0 505.619787 217.948594)">40%</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_13">
+      <path d="M 512.619787 182.237812 
+L 847.44 182.237812 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_14">
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="182.237812" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_20">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="186.055156" transform="rotate(-0 505.619787 186.055156)">50%</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_15">
+      <path d="M 512.619787 150.344375 
+L 847.44 150.344375 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_16">
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="150.344375" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_21">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="154.161719" transform="rotate(-0 505.619787 154.161719)">60%</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_17">
+      <path d="M 512.619787 118.450937 
+L 847.44 118.450937 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_18">
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="118.450937" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_22">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="122.268281" transform="rotate(-0 505.619787 122.268281)">70%</text>
+     </g>
+    </g>
+    <g id="ytick_9">
+     <g id="line2d_19">
+      <path d="M 512.619787 86.5575 
+L 847.44 86.5575 
+" clip-path="url(#p28a0727a70)" style="fill: none; stroke: #dce5ef; stroke-opacity: 0.65; stroke-width: 0.8; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_20">
+      <g>
+       <use xlink:href="#m64cf83cb39" x="512.619787" y="86.5575" style="fill: #64748b; stroke: #64748b; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_23">
+      <text style="font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: end; fill: #64748b" x="505.619787" y="90.374844" transform="rotate(-0 505.619787 90.374844)">80%</text>
+     </g>
+    </g>
+    <g id="text_24">
+     <text style="font-size: 11px; font-family: 'SimSun'; text-anchor: middle; fill: #64748b" x="480.039162" y="214.13125" transform="rotate(-90 480.039162 214.13125)">零值比例</text>
+    </g>
+   </g>
+   <g id="patch_6">
+    <path d="M 512.619787 341.705 
+L 847.44 341.705 
+" style="fill: none; stroke: #dce5ef; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 10px; font-family: 'SimSun'; text-anchor: start; fill: #64748b" x="512.619787" y="81.45455" transform="rotate(-0 512.619787 81.45455)">零值表示当周未订货或未供货，不进行插补</text>
+   </g>
+   <g id="text_26">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: middle; fill: #172033" x="583.706472" y="142.366837" transform="rotate(-0 583.706472 142.366837)">60.0%</text>
+   </g>
+   <g id="text_27">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Latin Modern Math'; text-anchor: middle; fill: #172033" x="776.353315" y="110.544441" transform="rotate(-0 776.353315 110.544441)">70.0%</text>
+   </g>
+   <g id="text_28">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'SimSun'; text-anchor: start; fill: #172033" x="512.619787" y="68.5575" transform="rotate(-0 512.619787 68.5575)">零值是有效业务记录</text>
+   </g>
+  </g>
+  <g id="text_29">
+   <text style="font-weight: 700; font-size: 21px; font-family: 'SimSun'; text-anchor: start; fill: #172033" x="47.16" y="23.934375" transform="rotate(-0 47.16 23.934375)">原始数据完整，零值具有明确业务含义</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p7a90e41c28">
+   <rect x="7.2" y="86.5575" width="452.007287" height="255.1475"/>
+  </clipPath>
+  <clipPath id="p28a0727a70">
+   <rect x="512.619787" y="86.5575" width="334.820213" height="255.1475"/>
+  </clipPath>
+ </defs>
+</svg>
