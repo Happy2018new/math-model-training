@@ -498,18 +498,18 @@ def plot_sensitivity_trends(
     records_by_key = _record_map(records)
     colors = (COLOR_BLUE, COLOR_CYAN, COLOR_ORANGE)
 
-    figure, axes = plt.subplots(1, 2, figsize=(13.5, 5.7), facecolor=COLOR_WHITE)
+    figure, axes = plt.subplots(1, 2, figsize=(13.5, 6.2), facecolor=COLOR_WHITE)
     figure.suptitle(
         "不确定因素对第三题方案的交互影响",
         x=0.065,
-        y=0.98,
+        y=0.985,
         ha="left",
         fontsize=20,
         fontweight="semibold",
     )
     figure.text(
         0.065,
-        0.92,
+        0.885,
         "每个情景独立优化；曲线比较参数变化对经济性与运输损耗的影响",
         color=COLOR_MUTED,
         fontsize=10.5,
@@ -638,7 +638,7 @@ def plot_sensitivity_trends(
     figure.subplots_adjust(
         left=0.07,
         right=0.98,
-        top=0.79,
+        top=0.75,
         bottom=0.21,
         wspace=0.25,
     )
