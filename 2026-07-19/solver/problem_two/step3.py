@@ -191,9 +191,7 @@ def resolve(
         base_price = BASE_PRICES[material]
         max_capacity = material_max_capacities[material]
         for level_index, supply in enumerate(levels[provider_id]):
-            unit_price = base_price * (
-                1 + elasticity * (1 - supply / max_capacity)
-            )
+            unit_price = base_price * (1 + elasticity * (1 - supply / max_capacity))
             purchase_cost = unit_price * supply
             for week in week_indices:
                 purchase_terms.append(
@@ -203,9 +201,7 @@ def resolve(
     purchase_expression = pulp.lpSum(purchase_terms)
     transport_expression = transport_unit_cost * pulp.lpSum(shipment_vars.values())
     storage_expression = storage_unit_cost * pulp.lpSum(inventory_vars.values())
-    primary_expression = (
-        purchase_expression + transport_expression + storage_expression
-    )
+    primary_expression = purchase_expression + transport_expression + storage_expression
     loss_expression = pulp.lpSum(
         minimum_providers.transfer_loss_rates[transfer] * variable
         for (provider_id, transfer, week), variable in shipment_vars.items()
@@ -346,8 +342,8 @@ def resolve(
     primary_status_code = problem.solve(make_solver("primary"))
     primary_pulp_status = pulp.LpStatus[primary_status_code]
     if solver_backend == "highs":
-        primary_status = str(problem.solverModel.getModelStatus()).split(".")[-1]
-        primary_info = problem.solverModel.getInfo()
+        primary_status = str(problem.solverModel.getModelStatus()).split(".")[-1]  # type: ignore
+        primary_info = problem.solverModel.getInfo()  # type: ignore
         primary_mip_gap = float(primary_info.mip_gap)
     else:
         primary_status, primary_mip_gap = _parse_cbc_log(cbc_log_paths[-1])
@@ -374,8 +370,8 @@ def resolve(
     secondary_status_code = problem.solve(make_solver("secondary"))
     secondary_pulp_status = pulp.LpStatus[secondary_status_code]
     if solver_backend == "highs":
-        secondary_status = str(problem.solverModel.getModelStatus()).split(".")[-1]
-        secondary_info = problem.solverModel.getInfo()
+        secondary_status = str(problem.solverModel.getModelStatus()).split(".")[-1]  # type: ignore
+        secondary_info = problem.solverModel.getInfo()  # type: ignore
         secondary_mip_gap = float(secondary_info.mip_gap)
     else:
         secondary_status, secondary_mip_gap = _parse_cbc_log(cbc_log_paths[-1])
@@ -397,7 +393,7 @@ def resolve(
         for provider_id in provider_ids:
             provider = provider_by_id[provider_id]
             shipments = [
-                max(0.0, float(pulp.value(shipment_vars[provider_id, transfer, week])))
+                max(0.0, float(pulp.value(shipment_vars[provider_id, transfer, week])))  # type: ignore
                 for transfer in transfer_indices
             ]
             expected_supply = sum(shipments)
@@ -424,19 +420,13 @@ def resolve(
 
             fulfillment_rate = fulfillment_rates[provider_id]
             order_quantity = (
-                expected_supply / fulfillment_rate
-                if expected_supply > EPSILON
-                else 0.0
+                expected_supply / fulfillment_rate if expected_supply > EPSILON else 0.0
             )
             material = provider.product_type
             base_price = BASE_PRICES[material]
             unit_price = base_price * (
                 1
-                + elasticity
-                * (
-                    1
-                    - expected_supply / material_max_capacities[material]
-                )
+                + elasticity * (1 - expected_supply / material_max_capacities[material])
             )
             purchase_cost = unit_price * expected_supply
             material_receipts[material] += actual_received
@@ -467,7 +457,7 @@ def resolve(
                     if state.product_type == material
                 )
             )
-            ending_inventory = float(pulp.value(inventory_vars[material, week]))
+            ending_inventory = float(pulp.value(inventory_vars[material, week]))  # type: ignore
             required_receipt = max(
                 0.0,
                 demand + SAFETY_STOCKS[material] - previous_inventory,
@@ -491,8 +481,7 @@ def resolve(
             state.ending_inventory for state in material_inventories
         )
         transport_loss = sum(
-            order.expected_supply - order.actual_received
-            for order in provider_orders
+            order.expected_supply - order.actual_received for order in provider_orders
         )
         total_cost = purchase_cost + transport_cost + storage_cost
         weeks.append(
