@@ -27,6 +27,10 @@ from .step2 import (
 )
 
 BASE_PRICES = {"A": 1.25, "B": 1.15, "C": 1.00}
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_OUTPUT_PATH = (
+    PROJECT_ROOT / "output" / "problems" / "two" / "integer_programming_result.txt"
+)
 
 
 def _parse_cbc_log(path: Path) -> tuple[str, float]:
@@ -524,6 +528,14 @@ def resolve(
     return IntegerProgrammingResult(
         optimized_plan=optimized_plan,
         baseline_plan=baseline,
+        minimum_provider_result=minimum_providers,
+        supply_percentile=supply_percentile,
+        loss_percentile=loss_percentile,
+        transport_unit_cost=transport_unit_cost,
+        storage_unit_cost=storage_unit_cost,
+        primary_tolerance=primary_tolerance,
+        relative_gap=relative_gap,
+        time_limit=time_limit,
         solver_name=solver_name,
         primary_solver_status=primary_status,
         secondary_solver_status=secondary_status,
@@ -540,6 +552,408 @@ def resolve(
         cost_saving=cost_saving,
         cost_saving_rate=cost_saving_rate,
     )
+
+
+def _format_time_limit(value: float | None) -> str:
+    """将求解时间上限转换为报告文本。"""
+    return "无限制" if value is None else f"{value:.1f} 秒/阶段"
+
+
+def _format_week_ranges(weeks: list[int]) -> str:
+    """将周次压缩为 1-4, 7, 9-12 形式。"""
+    if not weeks:
+        return "无"
+    ordered = sorted(set(weeks))
+    ranges: list[str] = []
+    start = previous = ordered[0]
+    for week in ordered[1:]:
+        if week == previous + 1:
+            previous = week
+            continue
+        ranges.append(str(start) if start == previous else f"{start}-{previous}")
+        start = previous = week
+    ranges.append(str(start) if start == previous else f"{start}-{previous}")
+    return ", ".join(ranges)
+
+
+def build_detailed_report(result: IntegerProgrammingResult) -> str:
+    """生成第二题 0-1 整数规划的完整 UTF-8 文本报告。"""
+    optimized = result.optimized_plan
+    baseline = result.baseline_plan
+    minimum_providers = result.minimum_provider_result
+    selected = sorted(
+        minimum_providers.selected_providers,
+        key=lambda provider: (provider.product_type, provider.provider_id),
+    )
+    provider_ids = [provider.provider_id for provider in selected]
+    fulfillment_rates = _fulfillment_rates()
+    loss_rates = minimum_providers.transfer_loss_rates
+
+    orders_by_provider: dict[int, list[WeeklyProviderOrder]] = defaultdict(list)
+    for week in optimized.weeks:
+        for order in week.provider_orders:
+            orders_by_provider[order.provider_id].append(order)
+
+    lines = [
+        "第二题第二问：未来 12 周 0-1 整数规划详细方案",
+        "=" * 116,
+        "",
+        "一、模型与求解参数",
+        f"供货能力分位数：{result.supply_percentile:.2%}",
+        f"转运损耗率分位数：{result.loss_percentile:.2%}",
+        f"价格弹性系数：{optimized.elasticity:.4f}",
+        f"标准供货档位数：{result.level_count}（标准档距为供货能力的 {1 / result.level_count:.2%}）",
+        "注：为保留已知可行基础方案，基础方案中的供货量也会作为额外可选档位。",
+        f"单位运输成本：{result.transport_unit_cost:.6f}",
+        f"单位库存成本：{result.storage_unit_cost:.6f}",
+        f"第一阶段成本容差：{result.primary_tolerance:.8f}",
+        f"目标相对 MIP Gap：{result.relative_gap:.4%}",
+        f"求解时间上限：{_format_time_limit(result.time_limit)}",
+        f"求解器：{result.solver_name}",
+        f"材料每周需求：A={MATERIAL_DEMANDS['A']:.3f}, "
+        f"B={MATERIAL_DEMANDS['B']:.3f}, C={MATERIAL_DEMANDS['C']:.3f}",
+        f"三周安全库存：A={SAFETY_STOCKS['A']:.3f}, "
+        f"B={SAFETY_STOCKS['B']:.3f}, C={SAFETY_STOCKS['C']:.3f}",
+        f"单家转运商每周容量上限：{TRANSFER_CAPACITY:.3f}",
+        "材料基准价格："
+        + ", ".join(
+            f"{material}={price:.4f}" for material, price in BASE_PRICES.items()
+        ),
+        "转运商预测损耗率："
+        + ", ".join(
+            f"T{index}={rate:.4%}" for index, rate in enumerate(loss_rates, 1)
+        ),
+        "",
+        "二、求解状态与基础方案对比",
+        f"第一阶段状态：{result.primary_solver_status}",
+        f"第一阶段 MIP Gap：{result.primary_mip_gap:.6%}",
+        f"第二阶段状态：{result.secondary_solver_status}",
+        f"第二阶段 MIP Gap：{result.secondary_mip_gap:.6%}",
+        f"是否达到设定 Gap 要求：{'是' if result.is_optimal else '否'}",
+        "说明：Gap 达标表示在当前精度要求下得到可接受近优解，不代表零 Gap 的精确全局最优证明。",
+        "",
+        f"{'指标':<18}{'基础方案':>18}{'0-1优化方案':>18}{'优化-基础':>18}",
+    ]
+    comparison_rows = (
+        ("采购成本", baseline.total_purchase_cost, optimized.total_purchase_cost),
+        ("运输成本", baseline.total_transport_cost, optimized.total_transport_cost),
+        ("库存成本", baseline.total_storage_cost, optimized.total_storage_cost),
+        ("总经济成本", baseline.total_cost, optimized.total_cost),
+        ("运输损耗", baseline.total_transport_loss, optimized.total_transport_loss),
+    )
+    for label, baseline_value, optimized_value in comparison_rows:
+        lines.append(
+            f"{label:<18}{baseline_value:>18.3f}{optimized_value:>18.3f}"
+            f"{optimized_value - baseline_value:>18.3f}"
+        )
+    lines.extend(
+        [
+            f"成本节省：{result.cost_saving:.3f}",
+            f"成本节省率：{result.cost_saving_rate:.4%}",
+            f"运输损耗减少：{baseline.total_transport_loss - optimized.total_transport_loss:.3f}",
+            "运输损耗降低率："
+            f"{(baseline.total_transport_loss - optimized.total_transport_loss) / baseline.total_transport_loss:.4%}",
+            f"基础方案非零供货分配次数：{baseline.successful_allocation_count}",
+            f"优化方案非零供货分配次数：{optimized.successful_allocation_count}",
+            "",
+            "三、入选供应商基础参数与 12 周汇总",
+            f"入选供应商数量：{len(selected)}",
+            f"{'供应商':<8}{'材料':<6}{'分位数能力':>14}{'修正能力':>14}"
+            f"{'履约率':>12}{'启用周数':>10}{'累计订货':>14}{'预计供货':>14}"
+            f"{'实际入库':>14}{'运输损耗':>14}{'加权均价':>12}{'采购成本':>14}{'使用转运商':>16}",
+        ]
+    )
+    for provider in selected:
+        provider_orders = orders_by_provider[provider.provider_id]
+        active_orders = [
+            order for order in provider_orders if order.expected_supply > EPSILON
+        ]
+        total_order = sum(order.order_quantity for order in active_orders)
+        total_supply = sum(order.expected_supply for order in active_orders)
+        total_received = sum(order.actual_received for order in active_orders)
+        total_purchase = sum(order.purchase_cost for order in active_orders)
+        weighted_price = total_purchase / total_supply if total_supply > EPSILON else 0.0
+        transfers = sorted(
+            {order.transfer_id for order in active_orders if order.transfer_id > 0}
+        )
+        transfer_text = ",".join(f"T{transfer}" for transfer in transfers) or "未启用"
+        lines.append(
+            f"S{provider.provider_id:03d}    {provider.product_type:<6}"
+            f"{provider.percentile_capacity:>14.3f}{provider.corrected_capacity:>14.3f}"
+            f"{fulfillment_rates[provider.provider_id]:>12.4%}{len(active_orders):>10}"
+            f"{total_order:>14.3f}{total_supply:>14.3f}{total_received:>14.3f}"
+            f"{total_supply - total_received:>14.3f}{weighted_price:>12.6f}"
+            f"{total_purchase:>14.3f}{transfer_text:>16}"
+        )
+
+    lines.extend(
+        [
+            "",
+            "四、未来 12 周逐家供应商订货与转运方案",
+            "说明：订货量为企业向供应商下达的数量；预计供货为考虑历史履约率后的运输前数量；"
+            "实际入库为扣除转运损耗后的数量。",
+            "非零行表示该供应商当周选中一个供货档位，并选中一家转运商；未启用名单中的供应商当周 0-1 选择值均为 0。",
+        ]
+    )
+    for week in optimized.weeks:
+        active_orders = sorted(
+            (
+                order
+                for order in week.provider_orders
+                if order.expected_supply > EPSILON
+            ),
+            key=lambda order: (order.product_type, order.provider_id),
+        )
+        active_ids = {order.provider_id for order in active_orders}
+        inactive = [
+            f"S{provider_id:03d}" for provider_id in provider_ids if provider_id not in active_ids
+        ]
+        lines.extend(
+            [
+                "",
+                f"第 {week.week:02d} 周",
+                f"{'供应商':<8}{'材料':<6}{'订货量':>14}{'预计供货':>14}"
+                f"{'能力上限':>14}{'能力占用':>12}{'单位价格':>12}{'采购成本':>14}"
+                f"{'转运商':>10}{'损耗率':>12}{'实际入库':>14}{'运输损耗':>14}",
+            ]
+        )
+        for order in active_orders:
+            capacity_rate = order.expected_supply / order.supply_capacity
+            lines.append(
+                f"S{order.provider_id:03d}    {order.product_type:<6}"
+                f"{order.order_quantity:>14.3f}{order.expected_supply:>14.3f}"
+                f"{order.supply_capacity:>14.3f}{capacity_rate:>12.2%}"
+                f"{order.unit_price:>12.6f}{order.purchase_cost:>14.3f}"
+                f"{f'T{order.transfer_id}':>10}{order.transfer_loss_rate:>12.4%}"
+                f"{order.actual_received:>14.3f}"
+                f"{order.expected_supply - order.actual_received:>14.3f}"
+            )
+        lines.append("本周未启用供应商：" + (", ".join(inactive) or "无"))
+
+    lines.extend(
+        [
+            "",
+            "五、三类材料需求、入库、库存与安全裕量的逐周变化",
+            f"{'周':>4}{'材料':>6}{'生产需求':>14}{'所需入库':>14}{'实际入库':>14}"
+            f"{'期末库存':>14}{'安全库存':>14}{'安全裕量':>14}",
+        ]
+    )
+    minimum_margin = (float("inf"), 0, "")
+    inventory_balance_ok = True
+    previous_inventory = dict(SAFETY_STOCKS)
+    for week in optimized.weeks:
+        for state in sorted(
+            week.material_inventories, key=lambda value: value.product_type
+        ):
+            margin = state.ending_inventory - state.safety_stock
+            minimum_margin = min(
+                minimum_margin,
+                (margin, week.week, state.product_type),
+            )
+            expected_inventory = (
+                previous_inventory[state.product_type]
+                + state.actual_received
+                - state.demand
+            )
+            inventory_balance_ok &= abs(expected_inventory - state.ending_inventory) <= 1e-4
+            previous_inventory[state.product_type] = state.ending_inventory
+            lines.append(
+                f"{week.week:>4}{state.product_type:>6}{state.demand:>14.3f}"
+                f"{state.required_receipt:>14.3f}{state.actual_received:>14.3f}"
+                f"{state.ending_inventory:>14.3f}{state.safety_stock:>14.3f}"
+                f"{margin:>14.3f}"
+            )
+
+    lines.extend(
+        [
+            "",
+            "六、采购成本、运输成本、库存成本与运输损耗的逐周变化",
+            f"{'周':>4}{'采购成本':>16}{'运输成本':>16}{'库存成本':>16}"
+            f"{'本周总成本':>16}{'本周运输损耗':>18}{'累计总成本':>16}{'累计损耗':>16}",
+        ]
+    )
+    cumulative_cost = 0.0
+    cumulative_loss = 0.0
+    for week in optimized.weeks:
+        cumulative_cost += week.total_cost
+        cumulative_loss += week.transport_loss
+        lines.append(
+            f"{week.week:>4}{week.purchase_cost:>16.3f}{week.transport_cost:>16.3f}"
+            f"{week.storage_cost:>16.3f}{week.total_cost:>16.3f}"
+            f"{week.transport_loss:>18.3f}{cumulative_cost:>16.3f}"
+            f"{cumulative_loss:>16.3f}"
+        )
+
+    lines.extend(
+        [
+            "",
+            "七、未来 12 周各转运商分配与负载",
+            "说明：下表按周列出实际启用的转运商；未启用的转运商在每周末单独列出。",
+        ]
+    )
+    transfer_totals = [0.0] * len(loss_rates)
+    transfer_received = [0.0] * len(loss_rates)
+    transfer_assignment_counts = [0] * len(loss_rates)
+    transfer_active_weeks: list[set[int]] = [set() for _ in loss_rates]
+    transfer_load_records: list[tuple[float, int, int]] = []
+    transfer_capacity_ok = True
+    for week in optimized.weeks:
+        lines.extend(
+            [
+                "",
+                f"第 {week.week:02d} 周",
+                f"{'转运商':<8}{'分配供应商':<42}{'运输负载':>14}{'容量占用率':>14}"
+                f"{'预测损耗率':>14}{'实际入库':>14}{'运输损耗':>14}",
+            ]
+        )
+        active_transfers: set[int] = set()
+        for transfer_id, load in enumerate(week.transfer_loads, 1):
+            assigned_orders = [
+                order
+                for order in week.provider_orders
+                if order.transfer_id == transfer_id
+                and order.expected_supply > EPSILON
+            ]
+            if not assigned_orders:
+                continue
+            active_transfers.add(transfer_id)
+            provider_text = ",".join(
+                f"S{order.provider_id:03d}" for order in assigned_orders
+            )
+            received = sum(order.actual_received for order in assigned_orders)
+            loss = load - received
+            transfer_totals[transfer_id - 1] += load
+            transfer_received[transfer_id - 1] += received
+            transfer_assignment_counts[transfer_id - 1] += len(assigned_orders)
+            transfer_active_weeks[transfer_id - 1].add(week.week)
+            transfer_load_records.append((load, week.week, transfer_id))
+            transfer_capacity_ok &= load <= TRANSFER_CAPACITY + 1e-5
+            lines.append(
+                f"T{transfer_id:<7}{provider_text:<42}{load:>14.3f}"
+                f"{load / TRANSFER_CAPACITY:>14.2%}{loss_rates[transfer_id - 1]:>14.4%}"
+                f"{received:>14.3f}{loss:>14.3f}"
+            )
+        idle = [
+            f"T{transfer_id}"
+            for transfer_id in range(1, len(loss_rates) + 1)
+            if transfer_id not in active_transfers
+        ]
+        lines.append("本周未启用转运商：" + (", ".join(idle) or "无"))
+
+    lines.extend(
+        [
+            "",
+            "八、各转运商 12 周汇总",
+            f"{'转运商':<8}{'预测损耗率':>14}{'启用周数':>12}{'供应商分配次数':>16}"
+            f"{'累计运输负载':>16}{'累计实际入库':>16}{'累计运输损耗':>16}",
+        ]
+    )
+    for transfer_id, rate in enumerate(loss_rates, 1):
+        index = transfer_id - 1
+        lines.append(
+            f"T{transfer_id:<7}{rate:>14.4%}{len(transfer_active_weeks[index]):>12}"
+            f"{transfer_assignment_counts[index]:>16}{transfer_totals[index]:>16.3f}"
+            f"{transfer_received[index]:>16.3f}"
+            f"{transfer_totals[index] - transfer_received[index]:>16.3f}"
+        )
+
+    all_orders = [order for week in optimized.weeks for order in week.provider_orders]
+    single_transfer_ok = all(
+        order.transfer_id in range(1, len(loss_rates) + 1)
+        for order in all_orders
+        if order.expected_supply > EPSILON
+    )
+    supply_capacity_ok = all(
+        order.expected_supply <= order.supply_capacity + 1e-5
+        for order in all_orders
+    )
+    safety_stock_ok = minimum_margin[0] >= -1e-5
+    cost_total_ok = abs(cumulative_cost - optimized.total_cost) <= 1e-4
+    loss_total_ok = abs(cumulative_loss - optimized.total_transport_loss) <= 1e-4
+    maximum_transfer_load = max(record[0] for record in transfer_load_records)
+    maximum_transfer_points = [
+        (week, transfer_id)
+        for load, week, transfer_id in transfer_load_records
+        if abs(load - maximum_transfer_load) <= 1e-5
+    ]
+    maximum_weeks_by_transfer: dict[int, list[int]] = defaultdict(list)
+    for week, transfer_id in maximum_transfer_points:
+        maximum_weeks_by_transfer[transfer_id].append(week)
+    maximum_transfer_text = ", ".join(
+        f"T{transfer_id}（第 {_format_week_ranges(weeks)} 周）"
+        for transfer_id, weeks in sorted(maximum_weeks_by_transfer.items())
+    )
+    lines.extend(
+        [
+            "",
+            "九、约束与汇总数据核验",
+            f"1. 每家供应商每周非零供货均仅分配一家转运商：{'通过' if single_transfer_ok else '未通过'}",
+            f"2. 所有供应商预计供货量均不超过修正能力上限：{'通过' if supply_capacity_ok else '未通过'}",
+            f"3. 所有转运商每周运输负载均不超过 {TRANSFER_CAPACITY:.3f}："
+            f"{'通过' if transfer_capacity_ok else '未通过'}",
+            f"   最大周负载为 {maximum_transfer_load:.3f}，"
+            f"容量占用率为 {maximum_transfer_load / TRANSFER_CAPACITY:.4%}。",
+            "   达到最大负载的周次与转运商：" + maximum_transfer_text,
+            f"4. A、B、C 三类材料逐周库存平衡关系：{'通过' if inventory_balance_ok else '未通过'}",
+            f"5. 所有周次期末库存均不低于三周安全库存：{'通过' if safety_stock_ok else '未通过'}",
+            f"   最小安全库存裕量为 {minimum_margin[0]:.3f}，出现在第 {minimum_margin[1]} 周"
+            f" {minimum_margin[2]} 类材料。",
+            f"6. 逐周成本之和与 12 周总成本一致：{'通过' if cost_total_ok else '未通过'}",
+            f"7. 逐周运输损耗之和与 12 周总损耗一致：{'通过' if loss_total_ok else '未通过'}",
+            "",
+            "十、关键参数变化的阅读说明",
+            "1. 供应商的订货量经历史履约率修正后形成预计供货量，因此订货量通常大于预计供货量。",
+            "2. 单位价格随供应商当周所选供货档位变化；供货量越接近同类材料的基准能力，价格加成越小。",
+            "3. 预计供货量经对应转运商的预测损耗率修正后形成实际入库量。",
+            "4. 期末库存由上周库存、本周实际入库量和生产需求共同决定；安全裕量用于衡量库存距离安全线的缓冲空间。",
+            "5. 转运商的周负载为当周分配给该转运商的所有供应商预计供货量之和。",
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
+def write_detailed_report(
+    result: IntegerProgrammingResult,
+    output_path: Path = DEFAULT_OUTPUT_PATH,
+) -> Path:
+    """将 0-1 整数规划详细方案写入 UTF-8 TXT。"""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(build_detailed_report(result), encoding="utf-8")
+    return output_path
+
+
+def run(
+    output_path: Path = DEFAULT_OUTPUT_PATH,
+    minimum_providers: MinimumProviderResult | None = None,
+    supply_percentile: float = 0.95,
+    loss_percentile: float = 0.75,
+    elasticity: float = 0.10,
+    level_count: int = 20,
+    transport_unit_cost: float = 0.0,
+    storage_unit_cost: float = 0.0,
+    primary_tolerance: float = 1e-5,
+    time_limit: float | None = 300.0,
+    relative_gap: float = 0.005,
+    solver_messages: bool = False,
+    solver_backend: str = "cbc",
+) -> IntegerProgrammingResult:
+    """求解第二题 0-1 整数规划并写出详细方案。"""
+    result = resolve(
+        minimum_providers=minimum_providers,
+        supply_percentile=supply_percentile,
+        loss_percentile=loss_percentile,
+        elasticity=elasticity,
+        level_count=level_count,
+        transport_unit_cost=transport_unit_cost,
+        storage_unit_cost=storage_unit_cost,
+        primary_tolerance=primary_tolerance,
+        time_limit=time_limit,
+        relative_gap=relative_gap,
+        solver_messages=solver_messages,
+        solver_backend=solver_backend,
+    )
+    write_detailed_report(result, output_path)
+    return result
 
 
 def debug(result: IntegerProgrammingResult) -> None:
@@ -573,4 +987,6 @@ def debug(result: IntegerProgrammingResult) -> None:
 
 
 if __name__ == "__main__":
-    debug(resolve())
+    solved_result = run()
+    debug(solved_result)
+    print(f"详细方案已写入：{DEFAULT_OUTPUT_PATH}")

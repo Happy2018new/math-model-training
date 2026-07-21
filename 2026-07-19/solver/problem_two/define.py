@@ -106,6 +106,14 @@ class IntegerProgrammingResult:
 
     optimized_plan: TwelveWeekOrderPlanResult  # 整数规划得到的未来 12 周方案
     baseline_plan: TwelveWeekOrderPlanResult  # 贪心算法生成的基础可行方案
+    minimum_provider_result: MinimumProviderResult  # Step 1 得到的最少供应商集合
+    supply_percentile: float  # 供应商稳定供货能力采用的历史分位数
+    loss_percentile: float  # 转运商损耗率预测采用的历史分位数
+    transport_unit_cost: float  # 单位运输成本系数
+    storage_unit_cost: float  # 单位库存成本系数
+    primary_tolerance: float  # 第二阶段允许的第一阶段成本绝对容差
+    relative_gap: float  # 两阶段求解器的目标相对 MIP Gap
+    time_limit: float | None  # 每个求解阶段的时间上限（秒）
     solver_name: str  # 实际使用的 MILP 求解器名称
     primary_solver_status: str  # 第一阶段经济成本最小化的求解状态
     secondary_solver_status: str  # 第二阶段运输损耗最小化的求解状态
