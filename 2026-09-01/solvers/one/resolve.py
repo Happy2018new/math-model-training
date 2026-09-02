@@ -70,14 +70,14 @@ def offset_sensor_data(data: SensorData, delta_time: float) -> SensorData:
 def generate_10hz_ans(delta_time: float) -> list[PosWithTime]:
     result = []
 
-    newS1, newS2 = s1, offset_sensor_data(s2, -delta_time)
-    start = min(newS1.start_time, newS2.start_time)
-    end = max(newS1.end_time, newS2.end_time)
+    new_s1, new_s2 = s1, offset_sensor_data(s2, -delta_time)
+    start = min(new_s1.start_time, new_s2.start_time)
+    end = max(new_s1.end_time, new_s2.end_time)
 
     t = start
     while t <= end:
-        pos1 = linear_interpolation(newS1, t)
-        pos2 = linear_interpolation(newS2, t)
+        pos1 = linear_interpolation(new_s1, t)
+        pos2 = linear_interpolation(new_s2, t)
 
         if pos1 is None and pos2 is not None:
             result.append(PosWithTime(t, pos2))
