@@ -10,11 +10,13 @@ def offset_sensor_data(data: SensorData, delta_time: float) -> SensorData:
     return data
 
 
-def offset_pos_list(data: SensorData, delta_offset: PosData) -> SensorData:
+def offset_pos_list(
+    data: SensorData, offset_posx: float, offset_posy: float
+) -> SensorData:
     data = copy.deepcopy(data)
     for i in data.payload:
-        i.posx += delta_offset.posx
-        i.posy += delta_offset.posy
+        i.posx += offset_posx
+        i.posy += offset_posy
     return data
 
 
@@ -42,5 +44,10 @@ def compute_delta_offset() -> tuple[PosData, SensorData, SensorData]:
 
         ptr += 0.1
 
-    delta_offset = PosData(-dx / count, -dy / count)
-    return delta_offset, new_s1, offset_pos_list(new_s2, delta_offset)
+    dx_mean = dx / count
+    dy_mean = dy / count
+    return (
+        PosData(dx_mean, dy_mean),
+        new_s1,
+        offset_pos_list(new_s2, -dx_mean, -dy_mean),
+    )

@@ -3,7 +3,7 @@ from pathlib import Path
 from .define import PosData, PosWithTime
 from .resolve import resolve
 
-OUTPUT_DIR = Path(__file__).resolve().parents[2] / "outputs" / "two"
+OUTPUT_DIR = Path(__file__).resolve().parents[2] / "outputs" / "three"
 
 
 def smooth_trajectory(
@@ -133,7 +133,6 @@ def plot_10hz_trajectory(
 
     figure.tight_layout()
     if save_path is not None:
-        # Keep every generated image in the problem-two output directory.
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         output_path = OUTPUT_DIR / Path(save_path).name
         figure.savefig(output_path, dpi=160, bbox_inches="tight")
