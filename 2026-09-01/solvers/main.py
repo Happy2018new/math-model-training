@@ -2,6 +2,6 @@ import os
 
 os.chdir("2026-09-01")
 
-from two.resolve import resolve
+from three.dump import dump_10hz_trajectory
 
-resolve()
+dump_10hz_trajectory()

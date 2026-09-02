@@ -1,41 +1,84 @@
 import csv
+import math
+from bisect import bisect_right
 from pathlib import Path
-
-from .define import SensorData
-from .delta_offset import offset_sensor_data
-from .delta_time import compute_delta_time, s1, s2
+from .define import PosData, PosWithTime
+from .resolve import resolve
 
 OUTPUT_DIR = Path(__file__).resolve().parents[2] / "outputs" / "three"
 HEADER = ("时间(s)", "X坐标(m)", "Y坐标(m)")
 
 
-def dump_sensor_data(data: SensorData, path: str | Path) -> Path:
-    """Write one sensor sequence in the same three-column CSV format."""
+def resample_10hz(trajectory: list[PosWithTime]) -> list[PosWithTime]:
+    """Resample a trajectory onto a strict 0.1-second time grid."""
+    if not trajectory:
+        return []
+    if len(trajectory) == 1:
+        return [trajectory[0]]
+
+    times = [item.time for item in trajectory]
+    start_index = math.ceil(times[0] * 10 - 1e-9)
+    end_index = math.floor(times[-1] * 10 + 1e-9)
+    if start_index > end_index:
+        return []
+
+    result = []
+    for grid_index in range(start_index, end_index + 1):
+        time = grid_index / 10
+        right = bisect_right(times, time)
+
+        if right == 0:
+            continue
+        if right == len(trajectory) or times[right - 1] == time:
+            result.append(trajectory[right - 1])
+            continue
+
+        left = right - 1
+        t1, t2 = times[left], times[right]
+        ratio = (time - t1) / (t2 - t1)
+        p1, p2 = trajectory[left].pos, trajectory[right].pos
+        result.append(
+            PosWithTime(
+                time,
+                PosData(
+                    (1 - ratio) * p1.posx + ratio * p2.posx,
+                    (1 - ratio) * p1.posy + ratio * p2.posy,
+                ),
+            )
+        )
+    return result
+
+
+def dump_trajectory(
+    trajectory: list[PosWithTime],
+    path: str | Path,
+) -> Path:
+    """Write a position trajectory in the original three-column CSV format."""
     output_path = Path(path)
     if not output_path.is_absolute():
         output_path = OUTPUT_DIR / output_path
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    trajectory = resample_10hz(trajectory)
+
     with output_path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(HEADER)
-        for index, point in enumerate(data.payload):
-            time = round(data.start_time + index / data.sensor_hz, 10)
-            writer.writerow((time, point.posx, point.posy))
+        for item in trajectory:
+            writer.writerow(
+                (
+                    round(item.time, 10),
+                    item.pos.posx,
+                    item.pos.posy,
+                )
+            )
 
     return output_path
 
 
-def dump_processed_sensors(
-    s1_path: str | Path = "table_1.csv",
-    s2_path: str | Path = "table_2.csv",
-) -> tuple[Path, Path]:
-    """Dump the two third-problem sensor sequences after time alignment.
-
-    Sensor 1 is kept unchanged. Sensor 2 is shifted by ``-delta_time`` so
-    both files use the sensor-1 time reference. No spatial offset is applied,
-    because the block-based test found no significant fixed spatial bias.
-    """
-    delta_time = compute_delta_time()
-    aligned_s2 = offset_sensor_data(s2, -delta_time)
-    return dump_sensor_data(s1, s1_path), dump_sensor_data(aligned_s2, s2_path)
+def dump_10hz_trajectory(
+    path: str | Path = "result.csv",
+) -> Path:
+    """Solve problem three and dump its formal 10 Hz fused trajectory."""
+    trajectory, _ = resolve()
+    return dump_trajectory(trajectory, path)
