@@ -27,8 +27,8 @@ def dump_sensor_data(data: SensorData, path: str | Path) -> Path:
 
 
 def dump_processed_sensors(
-    s1_path: str | Path = "table_3_sensor_1_processed.csv",
-    s2_path: str | Path = "table_3_sensor_2_aligned.csv",
+    s1_path: str | Path = "table_1.csv",
+    s2_path: str | Path = "table_2.csv",
 ) -> tuple[Path, Path]:
     """Dump the two third-problem sensor sequences after time alignment.
 
