@@ -231,12 +231,11 @@ def plot_conclusion(save_name: str = "problem_two_conclusion.svg") -> Path:
     axes[0, 0].grid(True, alpha=0.3)
     axes[0, 0].legend(loc="upper right")
 
-    axes[0, 1].plot(x1_aligned, y1_aligned, label="传感器1")
-    axes[0, 1].plot(x2_corrected, y2_corrected, label="传感器2（空间校正后）")
     axes[0, 1].plot(
         fused_x,
         fused_y,
-        linewidth=1.6,
+        color="tab:green",
+        linewidth=1.8,
         label=f"最终融合轨迹（{FINAL_FUSION_WINDOW} 点平滑）",
     )
     axes[0, 1].set_title(
