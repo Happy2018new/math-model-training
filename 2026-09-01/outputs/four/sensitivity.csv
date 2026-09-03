@@ -1,0 +1,10 @@
+﻿experiment,window_points,status,objective,shoot_count,photo_count,task_count,elapsed_seconds
+trajectory_smoothing_window,5,Optimal,0.0,0,0,0,0.17851089999976466
+trajectory_smoothing_window,11,Optimal,0.0,0,0,0,0.18385639999996783
+trajectory_smoothing_window,21,Optimal,600.0,0,6,6,0.21413600000005317
+trajectory_smoothing_window,31,Optimal,2125.0,3,19,22,0.5439238999997542
+trajectory_smoothing_window,41,Optimal,3075.0,9,24,33,4.559643800000231
+trajectory_smoothing_window,51,Optimal,3525.0,11,27,38,7.189076500000283
+trajectory_smoothing_window,61,Optimal,3625.0,11,28,39,9.032348600000205
+trajectory_smoothing_window,81,Optimal,3475.0,13,25,38,10.962390799999866
+trajectory_smoothing_window,101,Optimal,3400.0,16,22,38,11.097310000000107

@@ -80,11 +80,11 @@ def trajectory_from_result_csv(
     ]
 
 
-def calculate_candidates() -> (
-    tuple[dict[str, list[TaskCandidate]], dict[str, list[TaskCandidate]]]
-):
-    """计算每个射击目标和拍照目标的全部可行候选任务。"""
-    trajectory = trajectory_from_result_csv()
+def calculate_candidates(
+    window_length: int = TASK_SMOOTH_WINDOW,
+) -> tuple[dict[str, list[TaskCandidate]], dict[str, list[TaskCandidate]]]:
+    """按指定的局部拟合窗口计算全部可行候选任务。"""
+    trajectory = trajectory_from_result_csv(window_length)
 
     shoot_times = {
         target_id: feasible_shoot_times(
@@ -114,6 +114,7 @@ def _group_shoot_candidates(
 
 def solve_schedule(
     *,
+    window_length: int = TASK_SMOOTH_WINDOW,
     time_limit: float | None = None,
     message: bool = False,
 ) -> tuple[list[TaskCandidate], float, str]:
@@ -123,7 +124,7 @@ def solve_schedule(
     ``75 * 射击次数 + 100 * 拍照次数``。每一对时间冲突或角度冲突候选
     都直接加入 ``x_i + x_j <= 1``；每个射击目标至多执行一次。
     """
-    shoot_candidates, photo_candidates = calculate_candidates()
+    shoot_candidates, photo_candidates = calculate_candidates(window_length)
     candidates, time_conflicts, angle_conflicts = calculate_conflict_sets(
         shoot_candidates,
         photo_candidates,
@@ -132,6 +133,11 @@ def solve_schedule(
     candidate_index = {
         candidate_id: index for index, candidate_id in enumerate(candidate_ids)
     }
+
+    # 强平滑不足时可能没有任何轨迹点同时满足速度、加速度和距离约束。
+    # 这仍是一个有定义的可行解：不执行任何任务，目标值为 0。
+    if not candidate_ids:
+        return [], 0.0, "Optimal"
 
     conflict_pairs = sorted(time_conflicts | angle_conflicts)
     shoot_groups = [
