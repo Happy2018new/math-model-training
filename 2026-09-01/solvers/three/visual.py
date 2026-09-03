@@ -33,7 +33,7 @@ def plot_sensitivity(
     axes[0, 0].set_ylabel("时间偏差（秒）")
     axes[0, 0].ticklabel_format(axis="y", style="plain", useOffset=False)
     axes[0, 0].grid(True, alpha=0.3)
-    axes[0, 0].legend()
+    axes[0, 0].legend(loc="upper right")
 
     axes[0, 1].plot(x, [float(row["mean_dx"]) for row in smooth_rows], marker="o", label="X 方向平均差值")
     axes[0, 1].plot(x, [float(row["mean_dy"]) for row in smooth_rows], marker="s", label="Y 方向平均差值")
@@ -41,7 +41,7 @@ def plot_sensitivity(
     axes[0, 1].set_xlabel("平滑窗口（点）")
     axes[0, 1].set_ylabel("平均空间差值（米）")
     axes[0, 1].grid(True, alpha=0.3)
-    axes[0, 1].legend()
+    axes[0, 1].legend(loc="upper right")
 
     block_rows = [row for row in rows if row["experiment"] == "block_confidence"]
     for confidence, marker in ((0.90, "o"), (0.95, "s"), (0.99, "^")):
@@ -63,11 +63,11 @@ def plot_sensitivity(
     axes[1, 0].set_xlabel("分块大小（点）")
     axes[1, 0].set_ylabel("X 轴置信区间宽度（米）")
     axes[1, 0].grid(True, alpha=0.3)
-    axes[1, 0].legend()
+    axes[1, 0].legend(loc="upper right")
     axes[1, 1].set_xlabel("分块大小（点）")
     axes[1, 1].set_ylabel("Y 轴置信区间宽度（米）")
     axes[1, 1].grid(True, alpha=0.3)
-    axes[1, 1].legend()
+    axes[1, 1].legend(loc="upper right")
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     path = (OUTPUT_DIR / save_name).with_suffix(".svg")

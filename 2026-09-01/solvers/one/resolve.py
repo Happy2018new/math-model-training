@@ -129,13 +129,16 @@ def plot_conclusion(save_name: str = "problem_one_conclusion.svg"):
 
     import matplotlib.pyplot as plt
     import numpy as np
-    from matplotlib.ticker import FormatStrFormatter
 
     from ..sensitivity_common import (
         aligned_differences,
+        chinese_font_properties,
         configure_plot_fonts,
         estimate_delta_time,
+        fixed_mathtext_formatter,
         load_sensor_csv,
+        mathtext_number,
+        moving_average,
         smooth_sensor,
     )
 
@@ -143,6 +146,7 @@ def plot_conclusion(save_name: str = "problem_one_conclusion.svg"):
     data_dir = base_dir / "inputs"
     output_dir = base_dir / "outputs" / "one"
     configure_plot_fonts()
+    chinese_font = chinese_font_properties()
 
     t1, x1, y1 = load_sensor_csv(data_dir / "table_1_sensor_1.csv")
     t2, x2, y2 = load_sensor_csv(data_dir / "table_1_sensor_2.csv")
@@ -160,6 +164,10 @@ def plot_conclusion(save_name: str = "problem_one_conclusion.svg"):
         np.mean((dx - dx.mean()) ** 2 + (dy - dy.mean()) ** 2)
     )
     residual_rmse = float(np.sqrt(np.mean(dx**2 + dy**2)))
+    residual_window = 11
+    raw_display_stride = 10
+    smooth_dx = moving_average(dx, residual_window)
+    smooth_dy = moving_average(dy, residual_window)
 
     # Reserve a dedicated header band for the title and the numeric summary;
     # otherwise the summary text can touch the top-row axes after tight export.
@@ -171,44 +179,59 @@ def plot_conclusion(save_name: str = "problem_one_conclusion.svg"):
     axes[0, 0].set_ylabel("Y 坐标（米）")
     axes[0, 0].axis("equal")
     axes[0, 0].grid(True, alpha=0.3)
-    axes[0, 0].legend()
+    axes[0, 0].legend(loc="upper right")
 
     axes[0, 1].plot(x1_aligned, y1_aligned, label="方式1")
     axes[0, 1].plot(x2_aligned, y2_aligned, label="方式2（时间平移后）")
-    axes[0, 1].set_title(f"时间对齐后的轨迹（偏差 {delta:.3f} 秒）")
+    axes[0, 1].set_title(
+        f"时间对齐后的轨迹（偏差 {mathtext_number(delta, 3)} 秒）",
+        fontproperties=chinese_font,
+    )
     axes[0, 1].set_xlabel("X 坐标（米）")
     axes[0, 1].set_ylabel("Y 坐标（米）")
     axes[0, 1].axis("equal")
     axes[0, 1].grid(True, alpha=0.3)
-    axes[0, 1].legend()
+    axes[0, 1].legend(loc="upper right")
 
-    axes[1, 0].plot(times, dx, linewidth=0.8, label="X 方向差值")
-    axes[1, 0].axhline(
-        dx.mean(),
-        color="#c45b3c",
-        linestyle="--",
-        label=f"平均值 {dx.mean():.3f} 米",
-    )
-    axes[1, 0].set_title("对齐后的 X 方向差值")
-    axes[1, 0].set_xlabel("时间（秒）")
-    axes[1, 0].set_ylabel("差值（米）")
-    axes[1, 0].yaxis.set_major_formatter(FormatStrFormatter("%.5f"))
-    axes[1, 0].grid(True, alpha=0.3)
-    axes[1, 0].legend()
-
-    axes[1, 1].plot(times, dy, linewidth=0.8, label="Y 方向差值")
-    axes[1, 1].axhline(
-        dy.mean(),
-        color="#c45b3c",
-        linestyle="--",
-        label=f"平均值 {dy.mean():.3f} 米",
-    )
-    axes[1, 1].set_title("对齐后的 Y 方向差值")
-    axes[1, 1].set_xlabel("时间（秒）")
-    axes[1, 1].set_ylabel("差值（米）")
-    axes[1, 1].yaxis.set_major_formatter(FormatStrFormatter("%.5f"))
-    axes[1, 1].grid(True, alpha=0.3)
-    axes[1, 1].legend()
+    # The raw residual is sampled at 10 Hz after interpolating 4 Hz and 5 Hz
+    # sources.  Show it lightly, then overlay a residual-domain moving average
+    # so interpolation-scale oscillation does not obscure the conclusion.
+    for axis, residual, smoothed, direction in (
+        (axes[1, 0], dx, smooth_dx, "X"),
+        (axes[1, 1], dy, smooth_dy, "Y"),
+    ):
+        residual_um = residual * 1_000_000.0
+        smoothed_um = smoothed * 1_000_000.0
+        mean_um = float(residual.mean() * 1_000_000.0)
+        axis.scatter(
+            times[::raw_display_stride],
+            residual_um[::raw_display_stride],
+            color="#98a6ad",
+            s=5,
+            alpha=0.55,
+            linewidths=0,
+            label="原始差值（每秒抽样）",
+        )
+        axis.plot(
+            times,
+            smoothed_um,
+            color="#007c83",
+            linewidth=1.2,
+            label=f"{residual_window} 点平滑趋势",
+        )
+        axis.axhline(
+            mean_um,
+            color="#c45b3c",
+            linestyle="--",
+            linewidth=1.0,
+            label=f"平均值 {mathtext_number(mean_um, 2)} 微米",
+        )
+        axis.set_title(f"对齐后的 {direction} 方向残差")
+        axis.set_xlabel("时间（秒）")
+        axis.set_ylabel("残差（微米）")
+        axis.yaxis.set_major_formatter(fixed_mathtext_formatter(0))
+        axis.grid(True, alpha=0.3)
+        axis.legend(loc="upper right", prop=chinese_font)
 
     residual_mm = residual_rmse * 1000.0
     objective_mm2 = raw_objective * 1_000_000.0

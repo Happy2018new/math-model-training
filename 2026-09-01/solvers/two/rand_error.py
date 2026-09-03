@@ -1,4 +1,4 @@
-import copy, statistics
+import statistics
 from .define import PosData, SensorData
 from .delta_time import linear_interpolation
 from .delta_offset import compute_delta_offset

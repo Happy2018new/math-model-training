@@ -34,7 +34,7 @@ def run_sensitivity() -> Path:
         delta, objective = estimate_delta_time(
             st1, sx1, sy1, st2, sx2, sy2, 0.0, 1000.0
         )
-        _, dx, dy = aligned_differences(t1, x1, y1, t2, x2, y2, delta)
+        _, dx, dy = aligned_differences(st1, sx1, sy1, st2, sx2, sy2, delta)
         metrics = _spatial_metrics(dx, dy)
         rows.append(
             {
@@ -54,7 +54,7 @@ def run_sensitivity() -> Path:
     st1, sx1, sy1 = smooth_sensor(t1, x1, y1, 5)
     st2, sx2, sy2 = smooth_sensor(t2, x2, y2, 5)
     delta, objective = estimate_delta_time(st1, sx1, sy1, st2, sx2, sy2, 0.0, 1000.0)
-    _, dx, dy = aligned_differences(t1, x1, y1, t2, x2, y2, delta)
+    _, dx, dy = aligned_differences(st1, sx1, sy1, st2, sx2, sy2, delta)
     n = len(dx)
     for trim in (0.0, 0.05, 0.10):
         left = int(n * trim)

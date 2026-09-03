@@ -28,7 +28,7 @@ def run_sensitivity() -> Path:
         delta, objective = estimate_delta_time(
             st1, sx1, sy1, st2, sx2, sy2, -1500.0, 1500.0
         )
-        _, dx, dy = aligned_differences(t1, x1, y1, t2, x2, y2, delta)
+        _, dx, dy = aligned_differences(st1, sx1, sy1, st2, sx2, sy2, delta)
         result = bias_confidence(dx, dy, block_size=20, confidence=0.95)
         rows.append(
             {
@@ -54,7 +54,7 @@ def run_sensitivity() -> Path:
     delta, objective = estimate_delta_time(
         st1, sx1, sy1, st2, sx2, sy2, -1500.0, 1500.0
     )
-    _, dx, dy = aligned_differences(t1, x1, y1, t2, x2, y2, delta)
+    _, dx, dy = aligned_differences(st1, sx1, sy1, st2, sx2, sy2, delta)
     for block_size in (10, 20, 50, 100):
         for confidence in (0.90, 0.95, 0.99):
             result = bias_confidence(dx, dy, block_size, confidence)

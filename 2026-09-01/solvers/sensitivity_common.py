@@ -11,7 +11,10 @@ def configure_plot_fonts() -> None:
 
     mpl.rcParams["font.family"] = ["Latin Modern Math", "SimSun", "STSong"]
     mpl.rcParams["font.sans-serif"] = ["Latin Modern Math", "SimSun", "STSong"]
-    mpl.rcParams["axes.unicode_minus"] = False
+    # Route automatic tick labels through mathtext so negative values use the
+    # mathematical minus glyph from Latin Modern Math instead of a text dash.
+    mpl.rcParams["axes.unicode_minus"] = True
+    mpl.rcParams["axes.formatter.use_mathtext"] = True
     mpl.rcParams["mathtext.fontset"] = "custom"
     mpl.rcParams["mathtext.rm"] = "Latin Modern Math"
     mpl.rcParams["mathtext.it"] = "Latin Modern Math"
@@ -20,6 +23,29 @@ def configure_plot_fonts() -> None:
     mpl.rcParams["mathtext.sf"] = "Latin Modern Math"
     mpl.rcParams["mathtext.tt"] = "Latin Modern Math"
     mpl.rcParams["mathtext.fallback"] = "stix"
+
+
+def fixed_mathtext_formatter(precision: int):
+    """Return a fixed-point formatter whose signs are rendered in mathtext."""
+    from matplotlib.ticker import FormatStrFormatter
+
+    if precision < 0:
+        raise ValueError("precision must be non-negative")
+    return FormatStrFormatter(f"$%.{precision}f$")
+
+
+def chinese_font_properties():
+    """Provide a CJK font for text objects that also contain mathtext."""
+    from matplotlib.font_manager import FontProperties
+
+    return FontProperties(family="SimSun")
+
+
+def mathtext_number(value: float, precision: int) -> str:
+    """Format a signed number for use inside a mixed-language mathtext label."""
+    if precision < 0:
+        raise ValueError("precision must be non-negative")
+    return f"${value:.{precision}f}$"
 
 
 def load_sensor_csv(path: str | Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -100,9 +126,22 @@ def time_objective(
     delta: float,
     min_fraction: float = 0.8,
 ) -> float:
-    _, dx, dy = aligned_differences(t1, x1, y1, t2, x2, y2, delta)
-    if len(dx) < min_fraction * len(t1):
+    """Evaluate the time objective on sensor 1's original sampling instants.
+
+    This deliberately differs from :func:`aligned_differences`, which uses a
+    10 Hz grid for spatial comparison. The formal solvers estimate the time
+    offset at sensor 1's observed instants and interpolate sensor 2; keeping
+    that convention here makes the default sensitivity and formal results
+    directly comparable.
+    """
+    start = max(float(t1[0]), float(t2[0] - delta))
+    end = min(float(t1[-1]), float(t2[-1] - delta))
+    mask = (t1 >= start) & (t1 <= end)
+    if int(mask.sum()) < min_fraction * len(t1):
         return math.nan
+    query = t1[mask] + delta
+    dx = np.interp(query, t2, x2) - x1[mask]
+    dy = np.interp(query, t2, y2) - y1[mask]
     return float(np.mean((dx - dx.mean()) ** 2 + (dy - dy.mean()) ** 2))
 
 

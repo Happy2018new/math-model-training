@@ -7,10 +7,8 @@ from the sampling frequency stored in SensorData.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 import numpy as np
-
+from collections.abc import Sequence
 from .define import PosData, SensorData, TrajectoryPoint, sensor_data_from_raw
 from .prepare import data
 
@@ -70,12 +68,8 @@ def smooth_data(
         offsets = window[:, 0] - time
         degree = min(polyorder, len(window) - 1)
         design = np.vander(offsets, N=degree + 1, increasing=True)
-        x_coefficients = np.linalg.lstsq(
-            design, window[:, 1], rcond=None
-        )[0]
-        y_coefficients = np.linalg.lstsq(
-            design, window[:, 2], rcond=None
-        )[0]
+        x_coefficients = np.linalg.lstsq(design, window[:, 1], rcond=None)[0]
+        y_coefficients = np.linalg.lstsq(design, window[:, 2], rcond=None)[0]
 
         x_velocity = x_coefficients[1] if degree >= 1 else 0.0
         y_velocity = y_coefficients[1] if degree >= 1 else 0.0
@@ -87,9 +81,7 @@ def smooth_data(
                 time=float(time),
                 pos=PosData(float(x_coefficients[0]), float(y_coefficients[0])),
                 velocity=PosData(float(x_velocity), float(y_velocity)),
-                acceleration=PosData(
-                    float(x_acceleration), float(y_acceleration)
-                ),
+                acceleration=PosData(float(x_acceleration), float(y_acceleration)),
             )
         )
 
@@ -112,7 +104,4 @@ if __name__ == "__main__":
     print(f"raw points: {len(data)}")
     print(f"smoothed points: {len(smoothed_data)}")
     print(f"first speed: {smoothed_data[0].speed:.6f}")
-    print(
-        "first acceleration: "
-        f"{smoothed_data[0].acceleration_magnitude:.6f}"
-    )
+    print("first acceleration: " f"{smoothed_data[0].acceleration_magnitude:.6f}")

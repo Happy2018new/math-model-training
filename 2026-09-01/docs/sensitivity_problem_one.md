@@ -107,6 +107,8 @@ outputs/one/problem_one_sensitivity.svg
 
 ![问题一敏感性分析图](../outputs/one/problem_one_sensitivity.svg)
 
+图中坐标轴、标题和图例中的负数均以 LaTeX 数学模式排版，使用数学负号而非普通连字符。
+
 图片左图横轴是平滑窗口，右图横轴是粗搜索步长。每个子图中：
 
 - 蓝色圆点线表示估计时间偏差，对应左纵轴；

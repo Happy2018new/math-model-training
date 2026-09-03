@@ -2,18 +2,13 @@ import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
 
-from ..sensitivity_common import configure_plot_fonts
+from ..sensitivity_common import configure_plot_fonts, fixed_mathtext_formatter
 
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 CSV_DIR = BASE_DIR / "outputs" / "one"
 OUTPUT_DIR = BASE_DIR / "outputs" / "one"
-
-plt.rcParams["font.sans-serif"] = ["Noto Sans SC", "SimHei", "Microsoft YaHei", "DejaVu Sans"]
-plt.rcParams["axes.unicode_minus"] = False
-
 
 def plot_sensitivity(
     csv_path: str | Path | None = None,
@@ -38,7 +33,7 @@ def plot_sensitivity(
         axis.set_xlabel(xlabel)
         axis.set_ylabel("时间偏差（秒）")
         axis.ticklabel_format(axis="y", style="plain", useOffset=False)
-        axis.yaxis.set_major_formatter(FormatStrFormatter("%.3f"))
+        axis.yaxis.set_major_formatter(fixed_mathtext_formatter(3))
         axis.grid(True, alpha=0.3)
         twin = axis.twinx()
         twin.plot(x, objective, marker="s", color="#c45b3c", label="目标函数")
@@ -46,13 +41,13 @@ def plot_sensitivity(
         # dedicated mathtext objects where needed so font fallback is stable.
         twin.set_ylabel("目标函数（平方毫米）")
         twin.ticklabel_format(axis="y", style="plain", useOffset=False)
-        twin.yaxis.set_major_formatter(FormatStrFormatter("%.5f"))
+        twin.yaxis.set_major_formatter(fixed_mathtext_formatter(5))
         handles, labels = axis.get_legend_handles_labels()
         twin_handles, twin_labels = twin.get_legend_handles_labels()
         axis.legend(
             handles + twin_handles,
             labels + twin_labels,
-            loc="best",
+            loc="upper right",
             frameon=True,
         )
     figure.tight_layout()

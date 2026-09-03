@@ -1,8 +1,11 @@
+import math
 from pathlib import Path
 
 from .define import PosData, PosWithTime
 from .delta_time import linear_interpolation
 from .rand_error import compute_rand_error
+
+FINAL_FUSION_WINDOW = 11
 
 
 def resolve() -> tuple[
@@ -16,7 +19,9 @@ def resolve() -> tuple[
     start = min(s1.start_time, s2.start_time)
     end = max(s1.end_time, s2.end_time)
 
-    t = start
+    # Start on the common 10 Hz grid even when an aligned stream begins at a
+    # fractional tenth of a second.
+    t = math.ceil(start * 10 - 1e-9) / 10.0
     while t <= end:
         pos1 = linear_interpolation(s1, t)
         pos2 = linear_interpolation(s2, t)
@@ -38,7 +43,7 @@ def resolve() -> tuple[
 
         t = round(t + 0.1, 1)
 
-    return result, err
+    return smooth_trajectory(result, FINAL_FUSION_WINDOW), err
 
 
 OUTPUT_DIR = Path(__file__).resolve().parents[2] / "outputs" / "two"
@@ -135,7 +140,7 @@ def plot_10hz_trajectory(
     axes[0].set_ylabel("Y 坐标")
     axes[0].axis("equal")
     axes[0].grid(True, alpha=0.3)
-    axes[0].legend()
+    axes[0].legend(loc="upper right")
 
     if show_raw:
         axes[1].plot(times, xs, linewidth=0.8, label="原始数据")
@@ -179,53 +184,70 @@ def plot_conclusion(save_name: str = "problem_two_conclusion.svg") -> Path:
     import numpy as np
 
     from ..sensitivity_common import (
-        aligned_differences,
+        chinese_font_properties,
         configure_plot_fonts,
-        estimate_delta_time,
-        load_sensor_csv,
-        smooth_sensor,
+        mathtext_number,
     )
+    from .delta_offset import compute_delta_offset, offset_sensor_data
+    from .delta_time import compute_delta_time, linear_interpolation, s1, s2
 
     configure_plot_fonts()
-    data_dir = Path(__file__).resolve().parents[2] / "inputs"
-    t1, x1, y1 = load_sensor_csv(data_dir / "table_2_sensor_1.csv")
-    t2, x2, y2 = load_sensor_csv(data_dir / "table_2_sensor_2.csv")
-    st1, sx1, sy1 = smooth_sensor(t1, x1, y1, 5)
-    st2, sx2, sy2 = smooth_sensor(t2, x2, y2, 5)
-    delta, _ = estimate_delta_time(
-        st1, sx1, sy1, st2, sx2, sy2, 0.0, 1000.0
-    )
-    times, dx, dy = aligned_differences(t1, x1, y1, t2, x2, y2, delta)
-    x1_aligned = np.interp(times, t1, x1)
-    y1_aligned = np.interp(times, t1, y1)
-    x2_aligned = np.interp(times + delta, t2, x2)
-    y2_aligned = np.interp(times + delta, t2, y2)
-    mean_dx, mean_dy = float(dx.mean()), float(dy.mean())
-    x2_corrected = x2_aligned - mean_dx
-    y2_corrected = y2_aligned - mean_dy
-    fused_x = (x1_aligned + x2_corrected) / 2.0
-    fused_y = (y1_aligned + y2_corrected) / 2.0
+    chinese_font = chinese_font_properties()
+    # Use the exact same 5-point-preprocessed sequences as the solver.
+    delta = compute_delta_time()
+    offset, aligned_s1, corrected_s2 = compute_delta_offset()
+    aligned_s2 = offset_sensor_data(s2, -delta)
+    start_time = max(aligned_s1.start_time, aligned_s2.start_time)
+    end_time = min(aligned_s1.end_time, aligned_s2.end_time)
+    times = np.arange(
+        int(np.ceil(start_time * 10 - 1e-9)),
+        int(np.floor(end_time * 10 + 1e-9)) + 1,
+        dtype=float,
+    ) / 10.0
+    x1_aligned = np.array([linear_interpolation(aligned_s1, time).posx for time in times])
+    y1_aligned = np.array([linear_interpolation(aligned_s1, time).posy for time in times])
+    x2_aligned = np.array([linear_interpolation(aligned_s2, time).posx for time in times])
+    y2_aligned = np.array([linear_interpolation(aligned_s2, time).posy for time in times])
+    x2_corrected = np.array([linear_interpolation(corrected_s2, time).posx for time in times])
+    y2_corrected = np.array([linear_interpolation(corrected_s2, time).posy for time in times])
+    dx = x2_aligned - x1_aligned
+    dy = y2_aligned - y1_aligned
+    mean_dx, mean_dy = offset.posx, offset.posy
     rmse = float(np.sqrt(np.mean(dx**2 + dy**2)))
+    final_trajectory, _ = resolve()
+    fused_x = np.array([item.pos.posx for item in final_trajectory])
+    fused_y = np.array([item.pos.posy for item in final_trajectory])
 
     figure, axes = plt.subplots(2, 2, figsize=(12, 8), constrained_layout=True)
     axes[0, 0].plot(x1_aligned, y1_aligned, label="传感器1")
     axes[0, 0].plot(x2_aligned, y2_aligned, label="传感器2（时间对齐后）")
-    axes[0, 0].set_title(f"时间对齐后的两条轨迹（偏差 {delta:.3f} 秒）")
+    axes[0, 0].set_title(
+        f"时间对齐后的两条轨迹（偏差 {mathtext_number(delta, 3)} 秒）",
+        fontproperties=chinese_font,
+    )
     axes[0, 0].set_xlabel("X 坐标（米）")
     axes[0, 0].set_ylabel("Y 坐标（米）")
     axes[0, 0].axis("equal")
     axes[0, 0].grid(True, alpha=0.3)
-    axes[0, 0].legend()
+    axes[0, 0].legend(loc="upper right")
 
     axes[0, 1].plot(x1_aligned, y1_aligned, label="传感器1")
     axes[0, 1].plot(x2_corrected, y2_corrected, label="传感器2（空间校正后）")
-    axes[0, 1].plot(fused_x, fused_y, linewidth=1.6, label="融合轨迹")
-    axes[0, 1].set_title(f"空间偏移校正与融合（RMSE {rmse:.3f} 米）")
+    axes[0, 1].plot(
+        fused_x,
+        fused_y,
+        linewidth=1.6,
+        label=f"最终融合轨迹（{FINAL_FUSION_WINDOW} 点平滑）",
+    )
+    axes[0, 1].set_title(
+        f"空间偏移校正与融合（RMSE {mathtext_number(rmse, 3)} 米）",
+        fontproperties=chinese_font,
+    )
     axes[0, 1].set_xlabel("X 坐标（米）")
     axes[0, 1].set_ylabel("Y 坐标（米）")
     axes[0, 1].axis("equal")
     axes[0, 1].grid(True, alpha=0.3)
-    axes[0, 1].legend()
+    axes[0, 1].legend(loc="upper right")
 
     for axis, values, mean_value, direction in (
         (axes[1, 0], dx, mean_dx, "X"),
@@ -236,15 +258,18 @@ def plot_conclusion(save_name: str = "problem_two_conclusion.svg") -> Path:
             mean_value,
             color="#c45b3c",
             linestyle="--",
-            label=f"固定偏移 {mean_value:.3f} 米",
+            label=f"固定偏移 {mathtext_number(mean_value, 3)} 米",
         )
         axis.set_title(f"{direction} 方向空间差异")
         axis.set_xlabel("时间（秒）")
         axis.set_ylabel("差值（米）")
         axis.grid(True, alpha=0.3)
-        axis.legend()
+        axis.legend(loc="upper right", prop=chinese_font)
 
-    figure.suptitle("问题二：时间对齐、空间偏移校正与轨迹融合", fontsize=14)
+    figure.suptitle(
+        f"问题二：5 点预平滑、时间对齐、空间校正与 {FINAL_FUSION_WINDOW} 点融合轨迹平滑",
+        fontsize=14,
+    )
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     output_path = (OUTPUT_DIR / save_name).with_suffix(".svg")
     figure.savefig(output_path, format="svg", bbox_inches="tight")

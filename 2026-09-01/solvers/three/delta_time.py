@@ -1,5 +1,7 @@
 import math
+from functools import lru_cache
 from typing import Callable
+import numpy as np
 from .prepare import data1, data2
 from .define import PosData, SensorData, sensor_data_from_raw
 
@@ -29,10 +31,18 @@ def moving_average(data: SensorData, window: int = 5) -> SensorData:
     )
 
 
-s1 = sensor_data_from_raw(data1, 4)
-s2 = sensor_data_from_raw(data2, 5)
-new_s1 = moving_average(s1, 5)
-new_s2 = moving_average(s2, 5)
+PREPROCESS_WINDOW = 5
+
+# Keep the raw sequences for traceability, but expose the preprocessed
+# sequences to every subsequent alignment, bias, noise, and fusion step.
+raw_s1 = sensor_data_from_raw(data1, 4)
+raw_s2 = sensor_data_from_raw(data2, 5)
+s1 = moving_average(raw_s1, PREPROCESS_WINDOW)
+s2 = moving_average(raw_s2, PREPROCESS_WINDOW)
+
+# Compatibility aliases for the time-offset objective below.
+new_s1 = s1
+new_s2 = s2
 
 
 def linear_interpolation(data: SensorData, time: float) -> PosData | None:
@@ -86,22 +96,26 @@ def _compute_general(
 
 
 def guess_delta_time(answer: float) -> float | None:
-    offset1 = _compute_general(answer, lambda pos1, pos2: pos2.posx - pos1.posx)
-    if offset1 is None:
+    """Evaluate the centered two-dimensional residual for one time offset."""
+    time1 = s1.start_time + np.arange(len(s1.payload), dtype=float) / s1.sensor_hz
+    time2 = s2.start_time + np.arange(len(s2.payload), dtype=float) / s2.sensor_hz
+    start = max(s1.start_time, s2.start_time - answer)
+    end = min(s1.end_time, s2.end_time - answer)
+    mask = (time1 >= start) & (time1 <= end)
+    if int(mask.sum()) < 0.8 * len(s1.payload):
         return None
 
-    offset2 = _compute_general(answer, lambda pos1, pos2: pos2.posy - pos1.posy)
-    if offset2 is None:
-        return None
-
-    def func(pos1: PosData, pos2: PosData) -> float:
-        dx = (pos2.posx - pos1.posx - offset1) ** 2
-        dy = (pos2.posy - pos1.posy - offset2) ** 2
-        return dx + dy
-
-    return _compute_general(answer, func)
+    x1 = np.fromiter((point.posx for point in s1.payload), dtype=float)[mask]
+    y1 = np.fromiter((point.posy for point in s1.payload), dtype=float)[mask]
+    query = time1[mask] + answer
+    x2_values = np.fromiter((point.posx for point in s2.payload), dtype=float)
+    y2_values = np.fromiter((point.posy for point in s2.payload), dtype=float)
+    dx = np.interp(query, time2, x2_values) - x1
+    dy = np.interp(query, time2, y2_values) - y1
+    return float(np.mean((dx - dx.mean()) ** 2 + (dy - dy.mean()) ** 2))
 
 
+@lru_cache(maxsize=1)
 def compute_delta_time() -> float:
     ans = 0.0
     err = math.inf

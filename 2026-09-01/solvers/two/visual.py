@@ -37,7 +37,7 @@ def plot_sensitivity(
         axis.set_ylabel("时间偏差（秒）")
         axis.ticklabel_format(axis="y", style="plain", useOffset=False)
         axis.grid(True, alpha=0.3)
-        axis.legend()
+        axis.legend(loc="upper right")
 
     selected = [row for row in rows if row["experiment"] == "smoothing_window"]
     x = [float(row["parameter"]) for row in selected]
@@ -46,7 +46,7 @@ def plot_sensitivity(
     axes[1, 0].set_xlabel("平滑窗口（点）")
     axes[1, 0].set_ylabel("平均空间差值（米）")
     axes[1, 0].grid(True, alpha=0.3)
-    axes[1, 0].legend()
+    axes[1, 0].legend(loc="upper right")
 
     axes[1, 1].plot(x, [float(row["rmse"]) for row in selected], marker="o", label="均方根误差（RMSE）")
     axes[1, 1].plot(x, [float(row["std_dx"]) for row in selected], marker="s", label="X 方向标准差")
@@ -54,7 +54,7 @@ def plot_sensitivity(
     axes[1, 1].set_xlabel("平滑窗口（点）")
     axes[1, 1].set_ylabel("误差（米）")
     axes[1, 1].grid(True, alpha=0.3)
-    axes[1, 1].legend()
+    axes[1, 1].legend(loc="upper right")
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     path = (OUTPUT_DIR / save_name).with_suffix(".svg")
