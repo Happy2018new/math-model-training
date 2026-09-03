@@ -152,17 +152,13 @@ def plot_conclusion(save_name: str = "problem_one_conclusion.svg"):
     t2, x2, y2 = load_sensor_csv(data_dir / "table_1_sensor_2.csv")
     st1, sx1, sy1 = smooth_sensor(t1, x1, y1, 5)
     st2, sx2, sy2 = smooth_sensor(t2, x2, y2, 5)
-    delta, _ = estimate_delta_time(
-        st1, sx1, sy1, st2, sx2, sy2, 0.0, 1000.0
-    )
+    delta, _ = estimate_delta_time(st1, sx1, sy1, st2, sx2, sy2, 0.0, 1000.0)
     times, dx, dy = aligned_differences(t1, x1, y1, t2, x2, y2, delta)
     x1_aligned = np.interp(times, t1, x1)
     y1_aligned = np.interp(times, t1, y1)
     x2_aligned = np.interp(times + delta, t2, x2)
     y2_aligned = np.interp(times + delta, t2, y2)
-    raw_objective = float(
-        np.mean((dx - dx.mean()) ** 2 + (dy - dy.mean()) ** 2)
-    )
+    raw_objective = float(np.mean((dx - dx.mean()) ** 2 + (dy - dy.mean()) ** 2))
     residual_rmse = float(np.sqrt(np.mean(dx**2 + dy**2)))
     residual_window = 11
     raw_display_stride = 10
@@ -246,7 +242,7 @@ def plot_conclusion(save_name: str = "problem_one_conclusion.svg"):
         va="top",
         fontsize=10,
     )
-    figure.tight_layout(rect=[0.0, 0.0, 1.0, 0.93])
+    figure.tight_layout(rect=[0.0, 0.0, 1.0, 0.93])  # type: ignore
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = (output_dir / save_name).with_suffix(".svg")
     figure.savefig(output_path, format="svg", bbox_inches="tight")
