@@ -6,7 +6,12 @@ import csv
 from pathlib import Path
 
 from .define import TaskCandidate, TrajectoryPoint
-from .resolve import solve_schedule, trajectory_from_result_csv
+from .resolve import (
+    PHOTO_SCORE,
+    SHOOT_SCORE,
+    solve_schedule,
+    trajectory_from_result_csv,
+)
 
 
 OUTPUT_DIR = Path(__file__).resolve().parents[2] / "outputs" / "four"
@@ -57,7 +62,7 @@ def _write_solution(
                 ) from exc
             task_type = "射击" if candidate.task_type == "shoot" else "拍照"
             angle = "" if candidate.angle_deg is None else candidate.angle_deg
-            score = 75 if candidate.task_type == "shoot" else 100
+            score = SHOOT_SCORE if candidate.task_type == "shoot" else PHOTO_SCORE
             writer.writerow(
                 (
                     candidate.candidate_id,

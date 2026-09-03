@@ -25,7 +25,8 @@ from .smooth import sensor_data, smooth_data
 TASK_SMOOTH_WINDOW = 41
 TASK_POLYORDER = 3
 
-SHOOT_SCORE = 75
+# 单次射击命中率为 85%，故射击任务的期望收益为 85。
+SHOOT_SCORE = 85
 PHOTO_SCORE = 100
 
 SHOOT_CONSTRAINTS = {
@@ -121,7 +122,7 @@ def solve_schedule(
     """用成对冲突约束求解任务选择问题。
 
     每个候选任务对应一个 0-1 变量。目标函数为
-    ``75 * 射击次数 + 100 * 拍照次数``。每一对时间冲突或角度冲突候选
+    ``85 * 射击次数 + 100 * 拍照次数``。每一对时间冲突或角度冲突候选
     都直接加入 ``x_i + x_j <= 1``；每个射击目标至多执行一次。
     """
     shoot_candidates, photo_candidates = calculate_candidates(window_length)
